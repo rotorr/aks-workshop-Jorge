@@ -210,39 +210,35 @@ Output value of `vm_identity_id` and copy it so that it can be pasted when conne
 echo $vm_identity_id
 ```
 
-SSH into jumpbox using:
+Create remote alias to SSH into jumpbox using:
 
 ```bash
-az ssh vm -n $vn_name -g $rg
+alias remote="az ssh vm -n $vm_name -g $rg"
 ```
 
 Run the following commands to install kubectl and az login and confirm access:
 
 ```bash
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-sudo az aks install-cli
-vm_name=vm-jumpbox
-vm_identity_name=#<paste value from above>
-aks_name=aks-private
-rg=rg-aks-workshop-private
-az login --identity -u $vm_identity_id
-az aks get-credentials -n $aks_name -g $rg
-kubectl get node
+remote "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash"
+remote "sudo az aks install-cli"
+remote "az login --identity -u $vm_identity_id"
+remote "az aks get-credentials -n $aks_name -g $rg"
+remote "kubectl get node"
 ```
 
-## Create ACR
+## Deploy sample application
 
-Create ACR using these commands:
+Clone the repo to have manifest files available:
 
 ```bash
-acr_name=hack$RANDOM
-az acr create -n $acr_name -g $rg --sku Standard
-# Build images (you should be in the hack-containers home directory)
-cd api
-az acr build -r $acr_name -t hack/sqlapi:1.0 .
-cd ../web
-az acr build -r $acr_name -t hack/web:1.0 .
-az acr repository list -n $acr_name -o table
+remote "git clone https://github.com/yortch/aks-workshop"
 ```
 
-TODO: attach ACR to AKS cluster and deploy sample application
+Run the following commands to create a namespace and deploy hello world application:
+
+```bash
+remote "kubectl create namespace helloworld"
+remote "cp manifests/aks-helloworld.yaml"
+remote "kubectl apply -f aks-workshop/manifests/aks-helloworld.yaml -n helloworld"
+remote "kubectl get all -n helloworld"
+```
