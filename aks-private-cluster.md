@@ -240,5 +240,22 @@ Run the following commands to create a namespace and deploy hello world applicat
 remote "kubectl create namespace helloworld"
 remote "cp manifests/aks-helloworld.yaml"
 remote "kubectl apply -f aks-workshop/manifests/aks-helloworld.yaml -n helloworld"
+```
+
+Run the following command to verify deployment and service has been created. Re-run command until pod shows a STATUS of Running.
+
+```bash
 remote "kubectl get all -n helloworld"
+```
+
+Run this command until an ADDRESS is shown for the ingress (this may take a couple of minutes after creation):
+
+```bash
+remote "kubectl get ingress -n helloworld"
+```
+
+Run curl command to confirm the service is reachable on that address:
+
+```bash
+remote "curl -L http://<ADDRESS IP>"
 ```
