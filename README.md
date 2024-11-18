@@ -13,5 +13,6 @@ It is a compilation adapted primarily from the following workshops/resources:
 
 The following challenges are included in this lab:
 
-0. [Complete pre-requisites and environment setup](environment-setup.md)
+1. [Complete pre-requisites and environment setup](environment-setup.md)
+1. [Create Basic AKS Cluster](aks-basic-cluster.md)
 1. [Create AKS Private Cluster](aks-private-cluster.md)
