@@ -1,5 +1,7 @@
 # Create AKS Private Clusters
 
+> Estimated Duration: 60 minutes
+
 ## Introduction
 
 This challenge will cover deployment of a private AKS cluster fully integrated in a Virtual Network as well as deploying the sample app and configuring ingress.

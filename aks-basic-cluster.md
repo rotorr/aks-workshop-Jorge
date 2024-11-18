@@ -1,5 +1,7 @@
 # Create Basic AKS Cluster
 
+> Estimated Duration: 30 minutes
+
 This exercise will cover deployment of a basic AKS cluster. This will be use as the basis for most subsequent exercises.
 
 **NOTE:** You need to fulfill these [requirements](environment-setup.md) to complete this exercise.
