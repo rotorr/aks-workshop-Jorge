@@ -4,9 +4,18 @@ This repo contains hands-on labs to learn to configure, deploy and manage AKS cl
 
 The following labs are included in this lab:
 
+## Setup
+
 1. [Complete pre-requisites and environment setup](environment-setup.md)
 1. [Create Basic AKS Cluster](aks-basic-cluster.md)
+
+## Security
+
 1. [Create AKS Private Cluster](aks-private-cluster.md)
+
+## CI/CD
+
+1. [Deploy to AKS using GitHub Actions](aks-github-deploy.md)
 
 ## Reference
 
