@@ -245,38 +245,38 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
 
     > **_NOTE:_** This GitHub Action builds an image with a Dockerfile and push that image to your Azure Container Registry, the name of the image is specified in the Environment variable **APP_NAME: demo-api**, and the image tag is the **github.run_number**.
 
-1. Go to the Azure Portal and check your Azure Container Registry Repositories.
+1. Go to the Azure Portal and find your Azure Container Registry.
 
-1. Click on the **demo-api** Repository and you can see your tag.
+1. Within Services, click on Repositories. Click on the **demo-api** Repository and you can see your tag.
 
 ## Add a Kubernetes Deploy Step to the Workflow YAML
 
 ## Task 1 - Deploy the new workflow.yaml
 
-1. To create a the new GitHub Action, you need to append the **workflow.yaml** content in the **.github\workflows** directory with the content below.
+1. To create a the new GitHub Action, you need to append the content below at the bottom of the **.github/workflows/workflow.yaml** directory with the content below.
 
     > **_NOTE:_** This adds new steps to deploy the app in the AKS cluster.
 
     ```yaml
-        # Set the target Azure Kubernetes Service (AKS) cluster. 
-        - uses: azure/aks-set-context@v1
-            with:
-            creds: '${{ secrets.AZURE_CREDENTIALS }}'
-            cluster-name: ${{ env.CLUSTER_NAME }}
-            resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+    # Set the target Azure Kubernetes Service (AKS) cluster. 
+    - uses: azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.CLUSTER_NAME }}
+        resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
 
-        # Create namespace if doesn't exist
-        - run: |
-            kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
-        # Deploy app to AKS
-        - uses: azure/k8s-deploy@v1
-            with:
-            manifests: |
-                manifests/k8s-deployment.yaml
-                manifests/k8s-service.yaml
-            images: |
-                ${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }}
-            namespace: ${{ env.NAMESPACE }}
+    # Create namespace if doesn't exist
+    - run: |
+        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
+    # Deploy app to AKS
+    - uses: azure/k8s-deploy@v1
+      with:
+        manifests: |
+            manifests/k8s-deployment.yaml
+            manifests/k8s-service.yaml
+        images: |
+            ${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }}
+        namespace: ${{ env.NAMESPACE }}
     ```
 
 1. Push the changes to your GitHub Repository fork.
@@ -287,21 +287,20 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     git push
     ```
 
-1. Next trigger a new workflow run in the Actions tab of your GitHub Repository.
-
+1. Check for a new workflow run triggered in the Actions tab of your GitHub Repository.
 
 1. Copy the next command in the terminal to check your cluster for the expected resources:
 
-```PowerShell
-kubectl get all
-```
+    ```bash
+    kubectl get all -n ghdemo
+    ```
 
-1. Once the `EXTERNAL-IP1` for the `service/demo-api` has been assigned a value (you may have to wait a few minutes), open a browser and enter that IP address in your address bar:
+1. Once the `EXTERNAL-IP` for the `service/demo-api` has been assigned a value (you may have to wait a few minutes), open a browser and enter that IP address in your address bar:
 
 1. Verify that the correct image was deployed
 
     ```bash
-    kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}"
+    kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" -n ghdemo
     ```
 
     You should see the full name of the image, for example:

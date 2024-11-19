@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: app-container
-        image: acr_server_name/demo-api:latest
+        image: ${{ image }}
         resources:
           limits:
             memory: "512Mi"
