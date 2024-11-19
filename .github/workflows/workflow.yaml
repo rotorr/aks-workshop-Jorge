@@ -48,10 +48,6 @@ jobs:
         cluster-name: ${{ env.CLUSTER_NAME }}
         resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
 
-    # Create namespace if doesn't exist
-    - run: |
-        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
-
     - name: Install Helm
       uses: azure/setup-helm@v1
 
