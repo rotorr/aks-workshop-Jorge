@@ -8,9 +8,9 @@ on:
 env:
   APP_NAME: demo-api
   NAMESPACE: ghdemo
-  LOGIN_SERVER: <acrServerName>
-  CLUSTER_NAME: <clusterName>
-  CLUSTER_RESOURCE_GROUP: <clusterResourceGroup>     
+  LOGIN_SERVER: acrjrb27045.azurecr.io
+  CLUSTER_NAME: aks-jrb
+  CLUSTER_RESOURCE_GROUP: aks-jrb-rg     
 
 jobs:
   build:

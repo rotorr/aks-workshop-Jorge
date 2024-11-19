@@ -210,7 +210,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
 
     ```yaml
     on:
-    push:
+      push:
         branches:
         - main
     ```
@@ -221,12 +221,14 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     $ACR_SERVER_NAME=(az acr show -n $ACR_NAME --query loginServer -o tsv)
     ```
 
-1. Replace the **workflow-web1.yaml** file with the correct values and create the right file **workflow.yaml** in the right path.
+1. Replace the **workflow.yaml** file with the correct values.
 
     ```bash
+    cd .github/workflows
     sed -e "s/<acrServerName>/$ACR_SERVER_NAME/" \
         -e "s/<clusterName>/$AKS_NAME/" \
-        -e "s/<clusterResourceGroup>/$RESOURCE_GROUP/" workflow.yaml
+        -e "s/<clusterResourceGroup>/$RESOURCE_GROUP/" \
+        workflow.yaml > workflow.tmp && mv workflow.tmp workflow.yaml
     ```
 
 1. Commit and push changes to git repository:
