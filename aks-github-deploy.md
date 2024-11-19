@@ -255,35 +255,39 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
 
 1. To create a the new GitHub Action, you need to append the content below at the bottom of the **.github/workflows/workflow.yaml** directory with the content below.
 
-    > **_NOTE:_** This adds new steps to deploy the app in the AKS cluster.
+    > **_NOTE:_** This adds a new job to deploy the app in the AKS cluster using helm.
 
     ```yaml
-    # Set the target Azure Kubernetes Service (AKS) cluster. 
-    - uses: azure/aks-set-context@v1
-      with:
-        creds: '${{ secrets.AZURE_CREDENTIALS }}'
-        cluster-name: ${{ env.CLUSTER_NAME }}
-        resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+    deploy:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+        - name: Check Out Repo 
+        uses: actions/checkout@v2
 
-    # Create namespace if doesn't exist
-    - run: |
-        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
-    # Deploy app to AKS
-    - uses: azure/k8s-deploy@v1
-      with:
-        manifests: |
-            manifests/k8s-deployment.yaml
-            manifests/k8s-service.yaml
-        images: |
-            ${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }}
-        namespace: ${{ env.NAMESPACE }}
+        # Set the target Azure Kubernetes Service (AKS) cluster. 
+        - uses: azure/aks-set-context@v1
+        with:
+            creds: '${{ secrets.AZURE_CREDENTIALS }}'
+            cluster-name: ${{ env.CLUSTER_NAME }}
+            resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
+
+        - name: Install Helm
+        uses: azure/setup-helm@v4.2.0
+
+        # Deploy app to AKS
+        - name: Deploy to AKS using Helm
+        run: |
+            helm upgrade --install demo-api charts/demo-api \
+            --set image=${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }} \
+            --namespace ${{ env.NAMESPACE }} --create-namespace
     ```
 
 1. Push the changes to your GitHub Repository fork.
 
-    ```PowerShell
+    ```bash
     git add .
-    git commit -m "Update the the workflow.yaml and k8s-deployment.yaml"
+    git commit -m "Update the the workflow.yaml to deploy using helm"
     git push
     ```
 
@@ -295,7 +299,17 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     kubectl get all -n ghdemo
     ```
 
-1. Once the `EXTERNAL-IP` for the `service/demo-api` has been assigned a value (you may have to wait a few minutes), open a browser and enter that IP address in your address bar:
+1. Once the `EXTERNAL-IP` for the `service/demo-api` has been assigned a value (you may have to wait 1-2 minutes), run the command below to extract the `EXTERNAL-IP`:
+
+    ```bash
+    EXTERNAL_IP=$(kubectl get svc demo-api -n ghdemo -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    ```
+
+1. Run the command below to test the deployed api:
+
+    ```bash
+    curl -L http://$EXTERNAL_IP/weatherforecast
+    ```
 
 1. Verify that the correct image was deployed
 
@@ -306,7 +320,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     You should see the full name of the image, for example:
 
     ```txt
-    acrpacyowrfzcd.azurecr.io/demo-api:3
+    acrabc12345.azurecr.io/demo-api:3
     ```
 
 CONGRATULATIONS!!! You just built a full CI/CD pipeline from code to Kubernetes.
