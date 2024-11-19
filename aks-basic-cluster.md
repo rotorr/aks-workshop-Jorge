@@ -60,6 +60,21 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     kubectl get nodes
     ```
 
+### Create Azure Container Registry (ACR)
+
+ACR will be used in subsequent labs
+
+```bash
+ACR_NAME=acr$INITIALS$RANDOM
+az acr create -n $ACR_NAME -g $RESOURCE_GROUP --sku Standard
+```
+
+Attach ACR to existing AKS cluster
+
+```bash
+az aks update -g $RESOURCE_GROUP -n $AKS_NAME --attach-acr $ACR_NAME
+```
+
 ### Create a new Deployment
 
 The `manifests/aks-helloworld-basic.yaml` file contains a Deployment manifest.

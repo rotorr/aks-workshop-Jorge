@@ -153,15 +153,17 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
 
 ## Exercise: Create a Basic CI/CD Pipeline with GitHub Actions
 
+**NOTE:** This section task can be completed from local environment or from Github Codespaces
+
 ## Task 1 - Create the GitHub Action
 
 1. To create a GitHub Action, you need to have a **workflow.yaml** in the **.github\workflows** directory. Create the **\.github\workflows** folder:
 
     ```bash
-    mkdir -p .github\workflows
+    mkdir -p .github/workflows
     ```
 
-1. Create the `workflow.yaml` file with this content. **_NOTE:_** This workflow build, tag, and push the web image to your Azure Container Registry:
+1. Create the `workflow.yaml` file in the new directory with this content. **_NOTE:_** This workflow build, tag, and push the web image to your Azure Container Registry:
 
     ```yaml
     name: Demo-API-CI
@@ -172,33 +174,31 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
         - main
 
     env:
-        APP_NAME: demo-api
-        NAMESPACE: ghdemo
-        LOGIN_SERVER: <acrServerName>
-        CLUSTER_NAME: <clusterName>
-        CLUSTER_RESOURCE_GROUP: <clusterResourceGroup>     
+    APP_NAME: demo-api
+    NAMESPACE: ghdemo
+    LOGIN_SERVER: <acrServerName>
+    CLUSTER_NAME: <clusterName>
+    CLUSTER_RESOURCE_GROUP: <clusterResourceGroup>     
 
     jobs:
-
     build:
         runs-on: ubuntu-latest
-        steps:
-        
+        steps:   
         - name: Check Out Repo 
-            uses: actions/checkout@v2
+        uses: actions/checkout@v2
 
         # Connect to Azure Container Registry (ACR)
         - name: ACR login
-            uses: azure/docker-login@v1
-            with:
+        uses: azure/docker-login@v1
+        with:
             login-server: ${{ env.LOGIN_SERVER }}
             username: ${{ secrets.ACR_CLIENT_ID }}
             password: ${{ secrets.ACR_CLIENT_PASSWORD }}
 
         # Container build and push to a Azure Container Registry (ACR)
         - name: Build, tag, and push image to ACR
-            uses: docker/build-push-action@v2
-            with:
+        uses: docker/build-push-action@v2
+        with:
             context: ./src/demoapi
             file: Dockerfile
             push: true
