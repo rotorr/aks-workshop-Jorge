@@ -31,7 +31,7 @@ jobs:
     - name: Build, tag, and push image to ACR
       uses: docker/build-push-action@v2
       with:
-        context: ./src/demoapi
+        context: ./src
         file: Dockerfile
         push: true
         tags: |
