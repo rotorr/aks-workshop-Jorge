@@ -54,6 +54,6 @@ jobs:
     # Deploy app to AKS
     - name: Deploy to AKS using Helm
       run: |
-        helm upgrade --install demo-api charts/demo-api \
+        helm upgrade --install demo-api ./charts/demo-api \
           --set image=${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }} \
           --namespace ${{ env.NAMESPACE }} --create-namespace
