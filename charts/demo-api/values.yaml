@@ -1,0 +1,5 @@
+# Default values for demo-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image: mcr.microsoft.com/azuredocs/aks-helloworld:v1

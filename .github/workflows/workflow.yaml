@@ -46,13 +46,14 @@ jobs:
 
     # Create namespace if doesn't exist
     - run: |
-        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
+        kubectl create namespace ${{ env.NAMESPACE }}
+
+    - name: Install Helm
+      uses: azure/setup-helm@v1
+
     # Deploy app to AKS
-    - uses: azure/k8s-deploy@v1
-      with:
-        manifests: |
-            manifests/k8s-deployment.yaml
-            manifests/k8s-service.yaml
-        images: |
-            ${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }}
-        namespace: ${{ env.NAMESPACE }}
+    - name: Deploy to AKS using Helm
+      run: |
+        helm upgrade --install demo-api charts/demo-api \
+          --set image=${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }} \
+          --namespace ${{ env.NAMESPACE }}
