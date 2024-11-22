@@ -30,32 +30,6 @@ Use the same ACR, Azure Key Vault and AKS cluster you created for **Lab 4**.
 
 1. Login to your new account.
 
-## Task 2 - Create a ssh key
-
-1. Generate a SSH key (use your email) and **DO NOT ENTER A PASSPHRASE**.
-
-```bash
-ssh-keygen -C "myemail@mycompany.com"
-```
-
-## Task 3 - Configure your GitHub SSH Key
-
-1. If you haven't already done so, login to your GitHub account.
-
-1. Select your avatar in the upper right of the user interface and then click on **Settings** in the menu that appears.
-
-1. Click on **SSH and GPG keys** and **New SSH key**.
-
-    ![SSH Public Keys - New](content/ghselect-ssh-public-keys.png)
-
-1. Copy the content of the public key (for example, id_rsa.pub) that you generated in your local.
-
-    ```ssh
-    cat ~/~.ssh/id_rsa.pub
-    ```
-
-1. Name it as ssh key in the **Title section** and paste the content in the **Key** section. Finally, click on **Add SSH key**.
-
 ## Create a fork of this GitHub Repository
 
 1. Navigate to this link to create a new [fork](https://github.com/yortch/aks-workshop/fork) (must be logged into your github account).
