@@ -200,7 +200,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     ```bash
     cd .github/workflows
     sed -e "s/<acrServerName>/$ACR_SERVER_NAME/" \
-        -e "s/<clusterName>/$AKS_NAME/" \
+        -e "s/<clusterName>/$CLUSTER_NAME/" \
         -e "s/<clusterResourceGroup>/$RESOURCE_GROUP/" \
         workflow.yaml > workflow.tmp && mv workflow.tmp workflow.yaml
     ```

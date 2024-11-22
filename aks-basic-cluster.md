@@ -33,15 +33,15 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
 1. Define variables for AKS cluster.
 
     ```bash
-    AKS_NAME=aks-$INITIALS
-    echo "AKS Cluster Name: $AKS_NAME"
+    CLUSTER_NAME=aks-$INITIALS
+    echo "AKS Cluster Name: $CLUSTER_NAME"
     ```
 
 1. Create a simple AKS cluster.
 
     ```bash
     az aks create --node-count 2 \
-                  --name $AKS_NAME  \
+                  --name $CLUSTER_NAME  \
                   --resource-group $RESOURCE_GROUP
     ```
 
@@ -50,7 +50,7 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
 1. Once complete, connect the cluster to your local client machine.
 
     ```bash
-    az aks get-credentials --name $AKS_NAME \
+    az aks get-credentials --name $CLUSTER_NAME \
                            --resource-group $RESOURCE_GROUP
     ```
 
@@ -72,7 +72,7 @@ az acr create -n $ACR_NAME -g $RESOURCE_GROUP --sku Standard
 Attach ACR to existing AKS cluster
 
 ```bash
-az aks update -g $RESOURCE_GROUP -n $AKS_NAME --attach-acr $ACR_NAME
+az aks update -g $RESOURCE_GROUP -n $CLUSTER_NAME --attach-acr $ACR_NAME
 ```
 
 ### Create a new Deployment
