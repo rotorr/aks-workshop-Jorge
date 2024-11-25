@@ -30,33 +30,33 @@ The script blocks below in the sections below demonstrate how to complete all st
 Export environment variables required for resource group:
 
 ```bash
-location=eastus2
-rg=rg-aks-workshop-private
-aks_name=aks-private
+LOCATION=eastus2
+RG=rg-aks-workshop-private
+PRIVATE_AKS=aks-private
 ```
 
 Login to Azure and create resource group:
 
 ```bash
 az login
-az group create --name $rg --location $location
+az group create --name $RG --location $LOCATION
 ```
 
 Export variables for the virtual network for the AKS cluster:
 
 ```bash
-vnet_name=aks-vnet
-vnet_prefix=10.13.0.0/16
-aks_subnet_name=aks-subnet
-aks_subnet_prefix=10.13.76.0/24
+VNET_NAME=aks-vnet
+VNET_PREFIX=10.13.0.0/16
+AKS_SUBNET_NAME=aks-subnet
+AKS_SUBNET_PREFIX=10.13.76.0/24
 ```
 
 Create the virtual network for the AKS cluster:
 
 ```bash
-az network vnet create -g $rg -n $vnet_name --address-prefix $vnet_prefix -l $location
-az network vnet subnet create -g $rg -n $aks_subnet_name --vnet-name $vnet_name --address-prefix $aks_subnet_prefix
-aks_subnet_id=$(az network vnet subnet show -n $aks_subnet_name --vnet-name $vnet_name -g $rg --query id -o tsv)
+az network vnet create -g $RG -n $VNET_NAME --address-prefix $VNET_PREFIX -l $LOCATION
+az network vnet subnet create -g $RG -n $AKS_SUBNET_NAME --vnet-name $VNET_NAME --address-prefix $AKS_SUBNET_PREFIX
+AKS_SUBNET_ID=$(az network vnet subnet show -n $AKS_SUBNET_NAME --vnet-name $VNET_NAME -g $RG --query id -o tsv)
 ```
 
 ### Create Private AKS Cluster
@@ -70,9 +70,9 @@ export MSYS_NO_PATHCONV=1
 Create Private AKS cluster with Azure CNI Overlay, app routing and managed identity enabled:
 
 ```bash
-az aks create -g $rg -n $aks_name -l $location \
+az aks create -g $RG -n $PRIVATE_AKS -l $LOCATION \
     --generate-ssh-keys --enable-private-cluster \
-    --vnet-subnet-id $aks_subnet_id \
+    --vnet-subnet-id $AKS_SUBNET_ID \
     --network-plugin azure --network-policy cilium \
     --network-plugin-mode overlay --network-dataplane cilium \
     --enable-managed-identity --enable-app-routing
@@ -82,7 +82,7 @@ Cluster creation will take a few minutes. Once created, attempt to connect and y
 
 ```bash
 # Cluster-info
-az aks get-credentials -n $aks_name -g $rg --overwrite
+az aks get-credentials -n $PRIVATE_AKS -g $RG --overwrite
 kubectl get node
 ```
 
@@ -96,82 +96,81 @@ Export environment variables:
 
 ```bash
 # Variables
-vm_name=vm-jumpbox
-vm_nsg_name="${vm_name}-nsg"
-vm_sku=Standard_B2ms
-vm_subnet_name=vm-subnet
-vm_subnet_prefix=10.13.2.0/24
-image_urn=$(az vm image list -f "ubuntu-24_04-lts" -s "server" -l "$location" --query '[0].urn' -o tsv)
+VM_NAME=vm-jumpbox
+VM_NSG_NAME="${VM_NAME}-nsg"
+VM_SKU=Standard_B2ms
+VM_SUBNET_NAME=vm-subnet
+VM_SUBNET_PREFIX=10.13.2.0/24
+IMAGE_URN=$(az vm image list -f "ubuntu-24_04-lts" -s "server" -l "$LOCATION" --query '[0].urn' -o tsv)
 ```
 
 Create Subnet for the jumpbox:
 
 ```bash
-az network vnet subnet create -n $vm_subnet_name --vnet-name $vnet_name -g "$rg" --address-prefixes $vm_subnet_prefix
+az network vnet subnet create -n $VM_SUBNET_NAME --vnet-name $VNET_NAME -g "$RG" --address-prefixes $VM_SUBNET_PREFIX
 ```
 
 Create jumpbox VM:
 
 ```bash
-az vm create -n $vm_name -g $rg -l $location --image $image_urn --size $vm_sku --generate-ssh-keys \
-  --vnet-name $vnet_name --subnet $vm_subnet_name \
+az vm create -n $VM_NAME -g $RG -l $LOCATION --image $IMAGE_URN --size $VM_SKU --generate-ssh-keys \
+  --vnet-name $VNET_NAME --subnet $VM_SUBNET_NAME \
   --assign-identity --admin-username azureuser \
-  --nsg $vm_nsg_name --nsg-rule SSH
+  --nsg $VM_NSG_NAME --nsg-rule SSH
 ```
 
 Enable the Microsoft Entra login VM extension:
 
 ```bash
 az vm extension set --publisher Microsoft.Azure.ActiveDirectory \
-    --name AADSSHLoginForLinux -g $rg --vm-name $vm_name
+    --name AADSSHLoginForLinux -g $RG --vm-name $VM_NAME
 ```
 
 Grant VM admin login to your Entra login:
 
 ```bash
-username=$(az account show --query user.name --output tsv)
-rg_id=$(az group show --resource-group $rg --query id -o tsv)
+USERNAME=$(az account show --query user.name --output tsv)
+RG_ID=$(az group show --resource-group $RG --query id -o tsv)
 ```
 
 Next assign role:
 
 ```bash
-az role assignment create --role "Virtual Machine Administrator Login" --assignee $username --scope $rg_id
+az role assignment create --role "Virtual Machine Administrator Login" --assignee $USERNAME --scope $RG_ID
 ```
 
 NOTE: if your Entra domain and login username do not match then use these command instead:
 
 ```bash
-userid=$(az ad user list --filter "mail eq '$username'" --query [0].id -o tsv)
-az role assignment create --role "Virtual Machine Administrator Login" --assignee-object-id $userid --scope $rg_id
+USERID=$(az ad user list --filter "mail eq '$USERNAME'" --query [0].id -o tsv)
+az role assignment create --role "Virtual Machine Administrator Login" --assignee-object-id $USERID --scope $RG_ID
 ```
 
 Create managed identity and assign role to be able to login to AKS from jumpbox (only needed if your subscription does not allow you to log in via cli using device code):
 
 ```bash
 # Managed identity
-vm_identity_name=${vm_name}-identity
-az identity create -g $rg -n $vm_identity_name
-az vm identity assign -n $vm_name -g $rg --identities ${vm_name}-identity
-vm_identity_clientid=$(az identity show -n ${vm_name}-identity -g $rg --query clientId -o tsv)
-vm_identity_principalid=$(az identity show -n ${vm_name}-identity -g $rg --query principalId -o tsv)
-vm_identity_id=$(az identity show -n ${vm_name}-identity -g $rg --query id -o tsv)
-rg_id=$(az group show -n $rg --query id -o tsv)
-az role assignment create --assignee $vm_identity_principalid --role Contributor --scope $rg_id
-aks_id=$(az aks show --resource-group $rg --name $aks_name --query id --output tsv)
-az role assignment create --assignee $vm_identity_principalid --role "Azure Kubernetes Service RBAC Cluster Admin" --scope $aks_id
+VM_IDENTITY_NAME=${VM_NAME}-identity
+az identity create -g $RG -n $VM_IDENTITY_NAME
+az vm identity assign -n $VM_NAME -g $RG --identities ${VM_NAME}-identity
+VM_IDENTITY_PRINCIPALID=$(az identity show -n ${VM_NAME}-identity -g $RG --query principalId -o tsv)
+VM_IDENTITY_ID=$(az identity show -n ${VM_NAME}-identity -g $RG --query id -o tsv)
+RG_ID=$(az group show -n $RG --query id -o tsv)
+az role assignment create --assignee $VM_IDENTITY_PRINCIPALID --role Contributor --scope $RG_ID
+AKS_ID=$(az aks show --resource-group $RG --name $PRIVATE_AKS --query id --output tsv)
+az role assignment create --assignee $VM_IDENTITY_PRINCIPALID --role "Azure Kubernetes Service RBAC Cluster Admin" --scope $AKS_ID
 ```
 
-Output value of `vm_identity_id` and copy it so that it can be pasted when connected to jumpbox
+Output value of `VM_IDENTITY_ID` and copy it so that it can be pasted when connected to jumpbox
 
 ```bash
-echo $vm_identity_id
+echo $VM_IDENTITY_ID
 ```
 
 Create remote alias to SSH into jumpbox using:
 
 ```bash
-alias remote="az ssh vm -n $vm_name -g $rg"
+alias remote="az ssh vm -n $VM_NAME -g $RG"
 ```
 
 Run the following commands to install kubectl and az login and confirm access:
@@ -179,8 +178,8 @@ Run the following commands to install kubectl and az login and confirm access:
 ```bash
 remote "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash"
 remote "sudo az aks install-cli"
-remote "az login --identity -u $vm_identity_id"
-remote "az aks get-credentials -n $aks_name -g $rg"
+remote "az login --identity -u $VM_IDENTITY_ID"
+remote "az aks get-credentials -n $PRIVATE_AKS -g $RG"
 remote "kubectl get node"
 ```
 
