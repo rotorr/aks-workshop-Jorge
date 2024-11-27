@@ -2,9 +2,9 @@
 
 The following are pre-requisites before starting the labs:
 
-* Azure CLI
-* kubectl
-* Shell Terminal: e.g. git-bash, WSL
+* [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+* [kubectl](az aks install-cli)
+* Shell Terminal: e.g. [git-bash](https://git-scm.com/downloads), [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or MacOS Terminal
 
 Login to Azure.
 
@@ -16,6 +16,7 @@ Install the following Azure CLI extensions:
 
 ```bash
 az extension add -n ssh
+az extension add -n azure-firewall
 ```
 
 Register the following providers:

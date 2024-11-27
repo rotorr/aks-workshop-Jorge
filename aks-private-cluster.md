@@ -4,7 +4,9 @@
 
 ## Introduction
 
-This challenge will cover deployment of a private AKS cluster fully integrated in a Virtual Network as well as deploying the sample app and configuring ingress.
+This challenge will cover deployment of a private AKS cluster fully integrated in a Virtual Network as well as deploying the sample app and configuring ingress. Deploying a private AKS cluster is a complex task. It requires multiple Azure resources to be deployed and configured BEFORE deploying AKS, including a VM jumpbox with Azure CLI & kubectl CLI installed to access the private AKS cluster.
+
+The script blocks below in the sections below demonstrate how to complete all steps of this challenge to deploy a private AKS cluster. The script blocks use the Azure CLI to deploy and configure the Azure resources.
 
 You need to fulfill these [requirements](environment-setup.md) to complete this challenge
 
@@ -19,13 +21,7 @@ These docs will help you achieving these objectives:
 - [AKS Overview](https://docs.microsoft.com/azure/aks/)
 - [Web Application Routing Addon](https://docs.microsoft.com/azure/aks/web-app-routing)
 
-## Solution
-
-Deploying a private AKS cluster is a complex task. It requires multiple Azure resources to be deployed and configured BEFORE deploying AKS, including a VM jumpbox with Azure CLI & kubectl CLI installed to access the private AKS cluster.
-
-The script blocks below in the sections below demonstrate how to complete all steps of this challenge to deploy a private AKS cluster. The script blocks use the Azure CLI to deploy and configure the Azure resources.
-
-### Create resource group and virtual network
+## Create resource group and virtual network
 
 Export environment variables required for resource group:
 
@@ -59,9 +55,9 @@ az network vnet subnet create -g $RG -n $AKS_SUBNET_NAME --vnet-name $VNET_NAME 
 AKS_SUBNET_ID=$(az network vnet subnet show -n $AKS_SUBNET_NAME --vnet-name $VNET_NAME -g $RG --query id -o tsv)
 ```
 
-### Create Private AKS Cluster
+## Create Private AKS Cluster
 
-NOTE: if using MinGW client such as git-bash in Windows, export this variable to avoid converting variables with a leading `/` into system paths:
+> **NOTE:** if using MinGW client such as git-bash in Windows, export this variable to avoid converting variables with a leading `/` into system paths:
 
 ```bash
 export MSYS_NO_PATHCONV=1
@@ -88,7 +84,7 @@ kubectl get node
 
 To validate connectivity you can navigate to the created aks cluster resource in Azure Portal and clicking on [**Run command**](https://learn.microsoft.com/en-us/azure/aks/access-private-cluster?source=recommendations&tabs=azure-cli#run-commands-on-your-aks-cluster) under **Kubernetes Resources**
 
-### Create Jumpbox VM
+## Create Jumpbox VM
 
 Next create Jumpbox VM to connect to the Private AKS cluster. You will create a VM in the same vnet and install kubectl to have access to the API.
 
@@ -183,7 +179,7 @@ remote "az aks get-credentials -n $PRIVATE_AKS -g $RG"
 remote "kubectl get node"
 ```
 
-### Deploy sample application
+## Deploy sample application
 
 Clone the repo to have manifest files available:
 
@@ -215,4 +211,12 @@ Run curl command to confirm the service is reachable on that address:
 
 ```bash
 remote "curl -L http://<ADDRESS_IP>"
+```
+
+## Cleanup
+
+To cleanup delete resource group:
+
+```bash
+az group delete -g $RG
 ```

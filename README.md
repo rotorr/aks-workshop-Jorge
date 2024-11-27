@@ -14,6 +14,7 @@ This repo contains hands-on labs to learn to configure, deploy and manage AKS cl
 ## Security
 
 1. [Create AKS Private Cluster](aks-private-cluster.md) (60 minutes)
+1. [Create AKS Private Cluster limiting network traffic with Azure Firewall](aks-private-cluster-firewall.md) (60 minutes)
 1. [Using Microsoft Entra Workload Identity with AKS](aks-workload-identity.md) (60 minutes)
 
 ## Scaling
