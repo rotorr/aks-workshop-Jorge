@@ -3,8 +3,8 @@
 The following are pre-requisites before starting the labs:
 
 * [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-* [kubectl](az aks install-cli)
-* Shell Terminal: e.g. [git-bash](https://git-scm.com/downloads), [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or MacOS Terminal
+* `kubectl`: installed using: `az aks install-cli`
+* Shell Terminal: e.g. [git-bash](https://git-scm.com/downloads), [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or Mac OS Terminal
 
 Login to Azure.
 
