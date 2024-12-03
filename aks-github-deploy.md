@@ -53,21 +53,21 @@ We will create the secrets with Service Principal values, so first we must creat
     ```bash
     # Variables
     INITIALS="abc"
-    RESOURCE_GROUP=aks-$INITIALS-rg
+    RG=aks-$INITIALS-rg
     SP_NAME="sp-aks-${INITIALS}-gh"
     ```
 
 1. Next get required resource group and subscription ids:
 
     ```bash
-    resourceGroupId=$(az group show --name $RESOURCE_GROUP --query id --output tsv)
+    RG_ID=$(az group show --name $RG --query id --output tsv)
     ```
 
 1. Create service principal and copy output:
 
     ```bash
     az ad sp create-for-rbac --name $SP_NAME --role Contributor \
-    --scopes $resourceGroupId \
+    --scopes $RG_ID \
     --query "{clientId: appId, clientSecret: password, tenantId: tenant}"
     ```
 
@@ -201,7 +201,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     cd .github/workflows
     sed -e "s/<acrServerName>/$ACR_SERVER_NAME/" \
         -e "s/<clusterName>/$CLUSTER_NAME/" \
-        -e "s/<clusterResourceGroup>/$RESOURCE_GROUP/" \
+        -e "s/<clusterResourceGroup>/$RG/" \
         workflow.yaml > workflow.tmp && mv workflow.tmp workflow.yaml
     ```
 

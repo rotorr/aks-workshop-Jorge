@@ -17,7 +17,7 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
 1. Define global variables
 
     ```bash
-    RESOURCE_GROUP=aks-$INITIALS-rg
+    RG=aks-$INITIALS-rg
     LOCATION=eastus2
     ```
 
@@ -27,7 +27,7 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
 
     ```bash
     az group create --location $LOCATION \
-                    --resource-group $RESOURCE_GROUP
+                    --resource-group $RG
     ```
 
 1. Define variables for AKS cluster.
@@ -43,7 +43,7 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     az aks create --node-count 2 \
                   --name $CLUSTER_NAME \
                   --node-count 2 \
-                  --resource-group $RESOURCE_GROUP
+                  --resource-group $RG
     ```
 
     **NOTE:** The creation process will take able 5-10 minutes.
@@ -52,7 +52,7 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
 
     ```bash
     az aks get-credentials --name $CLUSTER_NAME \
-                           --resource-group $RESOURCE_GROUP
+                           --resource-group $RG
     ```
 
 1. Confirm the connection to the cluster.
@@ -67,13 +67,13 @@ ACR will be used in subsequent labs
 
 ```bash
 ACR_NAME=acr$INITIALS$RANDOM
-az acr create -n $ACR_NAME -g $RESOURCE_GROUP --sku Standard
+az acr create -n $ACR_NAME -g $RG --sku Standard
 ```
 
 Attach ACR to existing AKS cluster
 
 ```bash
-az aks update -g $RESOURCE_GROUP -n $CLUSTER_NAME --attach-acr $ACR_NAME
+az aks update -g $RG -n $CLUSTER_NAME --attach-acr $ACR_NAME
 ```
 
 ### Create a new Deployment
