@@ -14,7 +14,7 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     INITIALS="abc"
     ```
 
-1. Define global variables
+1. Define global variables (adjust location if needed)
 
     ```bash
     RG=aks-$INITIALS-rg

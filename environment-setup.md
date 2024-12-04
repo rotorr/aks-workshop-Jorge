@@ -1,10 +1,24 @@
 # Environment Setup
 
+## Prior to Lab Day
+
 The following are pre-requisites before starting the labs:
 
 * [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-* `kubectl`: installed using: `az aks install-cli`
+* [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
+* [Helm](https://helm.sh/docs/intro/install/)
 * Shell Terminal: e.g. [git-bash](https://git-scm.com/downloads), [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or Mac OS Terminal
+* [Certbot](https://eff-certbot.readthedocs.io/en/stable/install.html#installation)
+  * Option 1: using WSL, install using: `sudo apt-get install certbot`
+  * Option 2: using Docker command:
+        ```
+        docker run -it --rm --name certbot \
+        -v "/etc/letsencrypt:/etc/letsencrypt" \
+        -v "/var/lib/letsencrypt:/var/lib/letsencrypt" \
+        certbot/certbot certonly
+        ```
+
+## During Lab Day
 
 Login to Azure.
 

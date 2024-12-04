@@ -18,8 +18,7 @@ You need to fulfill these [requirements](environment-setup.md) to complete this 
 
 These docs will help you achieving these objectives:
 
-- [AKS Overview](https://docs.microsoft.com/azure/aks/)
-- [Web Application Routing Addon](https://docs.microsoft.com/azure/aks/web-app-routing)
+- [Create a private AKS cluster](https://learn.microsoft.com/en-us/azure/aks/private-clusters)
 
 ## Create resource group and virtual network
 
@@ -63,15 +62,14 @@ AKS_SUBNET_ID=$(az network vnet subnet show -n $AKS_SUBNET_NAME --vnet-name $VNE
 export MSYS_NO_PATHCONV=1
 ```
 
-Create Private AKS cluster with Azure CNI Overlay, app routing and managed identity enabled:
+Create Private AKS cluster with managed identity enabled:
 
 ```bash
 az aks create -g $RG -n $PRIVATE_AKS -l $LOCATION \
     --generate-ssh-keys --enable-private-cluster \
     --vnet-subnet-id $AKS_SUBNET_ID \
-    --network-plugin azure --network-policy cilium \
-    --network-plugin-mode overlay --network-dataplane cilium \
-    --enable-managed-identity --enable-app-routing
+    --network-plugin azure \
+    --enable-managed-identity
 ```
 
 Cluster creation will take a few minutes. Once created, attempt to connect and you will notice it will fail due to being a private cluster:
@@ -191,8 +189,8 @@ Run the following commands to create a namespace and deploy hello world applicat
 
 ```bash
 remote "kubectl create namespace helloworld"
-remote "cp manifests/aks-helloworld.yaml"
-remote "kubectl apply -f aks-workshop/manifests/aks-helloworld.yaml -n helloworld"
+remote "cp manifests/aks-helloworld-basic.yaml"
+remote "kubectl apply -f aks-workshop/manifests/aks-helloworld-basic.yaml -n helloworld"
 ```
 
 Run the following command to verify deployment and service has been created. Re-run command until pod shows a STATUS of Running.
@@ -201,16 +199,16 @@ Run the following command to verify deployment and service has been created. Re-
 remote "kubectl get all -n helloworld"
 ```
 
-Run this command until an ADDRESS is shown for the ingress (this may take a couple of minutes after creation):
+Run this command until an `EXTERNAL_IP` is shown for the service (this may take a couple of minutes after creation):
 
 ```bash
-remote "kubectl get ingress -n helloworld"
+remote "kubectl get service -n helloworld"
 ```
 
 Run curl command to confirm the service is reachable on that address:
 
 ```bash
-remote "curl -L http://<ADDRESS_IP>"
+remote "curl -L http://<EXTERNAL_IP>"
 ```
 
 ## Cleanup
