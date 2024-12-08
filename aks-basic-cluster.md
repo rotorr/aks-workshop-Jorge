@@ -42,7 +42,6 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     ```bash
     az aks create --node-count 2 \
                   --name $CLUSTER_NAME \
-                  --node-count 2 \
                   --resource-group $RG
     ```
 

@@ -29,6 +29,7 @@ This repo contains hands-on labs to learn to configure, deploy and manage AKS cl
 ## Scaling
 
 1. [Autoscaling using Horizontal Pod Autoscaler and Cluster Autoscaler](aks-cluster-autoscaler.md) (60 minutes)
+1. [Autoscaling with the KEDA add-on and workload identity on AKS](aks-keda-scaler.md) (60 minutes)
 
 ## CI/CD
 
