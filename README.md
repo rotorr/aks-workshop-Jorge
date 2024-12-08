@@ -4,11 +4,12 @@ This repo contains hands-on labs to learn to configure, deploy and manage AKS cl
 
 ## Agenda
 
-[2-day format agenda](agenda.md)
+[2-day format agenda](AGENDA.md)
 
 ## Labs
 
 ### Setup
+
 1. [Complete pre-requisites and environment setup](environment-setup.md) (30 minutes)
 1. [Create Basic AKS Cluster](aks-basic-cluster.md) (60 minutes)
 
