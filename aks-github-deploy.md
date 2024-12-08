@@ -6,7 +6,7 @@
 
 [Exercise: Configure GitHub](#configure-github)
 
-[Exercise: Create a GitHub Repository](#create-a-fork-of-this-github-repository)
+[Exercise: Create a GitHub Repository](#create-a-fork-of-this-github-repository-and-create-github-codespace)
 
 [Exercise: Create the Secrets for the GitHub repo](#create-the-secrets-for-the-github-repo)
 
@@ -20,17 +20,14 @@ Use this configuration to prepare GitHub for either one of the following exercis
 
 Use the same ACR, Azure Key Vault and AKS cluster you created for **Lab 4**.
 
-## Task 1 - Create a GitHub account
+### Create a GitHub account
 
 1. If you don't already have access to a GitHub account, navigate to: [https://github.com](https://github.com)
-
 1. Click on sign up.
-
 1. Use an email of your choice to create an account.
-
 1. Login to your new account.
 
-## Create a fork of this GitHub Repository
+### Create a fork of this GitHub Repository and create Github codespace
 
 1. Navigate to this link to create a new [fork](https://github.com/yortch/aks-workshop/fork) (must be logged into your github account).
 1. Accept the default values and click on **"Create fork"** which will take you to the forked repository in the browser.
