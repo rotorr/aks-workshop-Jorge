@@ -182,7 +182,7 @@ remote "kubectl get node"
 Clone the repo to have manifest files available:
 
 ```bash
-remote "git clone https://github.com/yortch/aks-workshop"
+remote "git clone https://github.com/microsoft/aks-workshop"
 ```
 
 Run the following commands to create a namespace and deploy hello world application:

@@ -32,7 +32,7 @@ Use the same ACR, Azure Key Vault and AKS cluster you created for **Lab 4**.
 
 ## Create a fork of this GitHub Repository
 
-1. Navigate to this link to create a new [fork](https://github.com/yortch/aks-workshop/fork) (must be logged into your github account).
+1. Navigate to this link to create a new [fork](https://github.com/microsoft/aks-workshop/fork) (must be logged into your github account).
 1. Accept the default values and click on **"Create fork"** which will take you to the forked repository in the browser.
 1. From your forked repository click on the **"<> Code"** button. Then click on the **"Create codespace on main"** button.
 
