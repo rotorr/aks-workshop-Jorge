@@ -41,8 +41,9 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
 
     ```bash
     KUBERNETES_VERSION='1.29.9'
-    az aks create --node-count 2 \
-                  --name $CLUSTER_NAME \
+    az aks create --name $CLUSTER_NAME \
+                  --generate-ssh-keys \
+                  --node-count 2 \
                   --resource-group $RG \
                   --kubernetes-version $KUBERNETES_VERSION
     ```
