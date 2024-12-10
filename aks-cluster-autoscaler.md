@@ -119,7 +119,7 @@ To test the Cluster Autoscaler, we first need to add an HPA we need to create a 
 
 The Cluster Autoscaler is looking for pods that are in a 'Pending' state because there aren't enough nodes to handle the requested resources. To test it, we can just play around with the cpu request size and the max replicas in the HPA. Lets set the request and limit size to 800m cores. This should cause the HPA to create up to 5 pods under load, so we'll quickly spill over the current single node.
 
-Set the request and limits in the deployment to 1 core:
+Run the command below to set the request and limits for the deployment to 800 millicores (0.8 cores):
 
 ```bash
 kubectl patch deployment aks-helloworld -n helloworld \
