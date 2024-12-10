@@ -6,7 +6,7 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
 
 **NOTE:** You need to fulfill these [requirements](environment-setup.md) to complete this exercise.
 
-1. Select the region closest to your location. Use **eastus2** for United States workshops, **westeurope** for European workshops. Other regions include: **eastus, westus, canadacentral, westeurope, centralindia, australiaeast**
+1. Select the region closest to your location. You can use **eastus2** for United States workshops, **westeurope** for European workshops. Other regions include: **eastus, westus, canadacentral, westeurope, centralindia, australiaeast**
 
 1. Set your initials.
 
@@ -14,7 +14,7 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     INITIALS="abc"
     ```
 
-1. Define global variables (adjust location if needed)
+1. Define global variables (adjust location value accordingly)
 
     ```bash
     RG=aks-$INITIALS-rg
@@ -37,12 +37,14 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     echo "AKS Cluster Name: $CLUSTER_NAME"
     ```
 
-1. Create a simple AKS cluster.
+1. Create a simple AKS cluster with 2 nodes and using a specific kubernetes version:
 
     ```bash
+    KUBERNETES_VERSION='1.29.9'
     az aks create --node-count 2 \
                   --name $CLUSTER_NAME \
-                  --resource-group $RG
+                  --resource-group $RG \
+                  --kubernetes-version $KUBERNETES_VERSION
     ```
 
     **NOTE:** The creation process will take able 5-10 minutes.
