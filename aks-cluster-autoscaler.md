@@ -30,7 +30,7 @@ RG=aks-$INITIALS-rg
 CLUSTER_NAME=aks-$INITIALS
 ```
 
-First get the nodepool name:
+First, get the nodepool name:
 
 ```bash
 NODEPOOL_NAME=$(az aks nodepool list -g $RG --cluster-name $CLUSTER_NAME --query '[].name' -o tsv)
@@ -117,9 +117,9 @@ To test the Cluster Autoscaler, we first need to add an HPA we need to create a 
 
 ## Test the Cluster Autoscaler
 
-The Cluster Autoscaler is looking for pods that are in a 'Pending' state because there aren't enough nodes to handle the requested resources. To test it, we can just play around with the cpu request size and the max replicas in the HPA. Lets set the request and limit size to 800m cores. This should cause the HPA to create up to 5 pods under load, so we'll quickly spill over the current single node.
+The Cluster Autoscaler is looking for pods that are in a "Pending" state because there aren't enough nodes to handle the requested resources. To test it, we can just play around with the cpu request size and the max replicas in the HPA. Lets set the request and limit size to 800m cores. This should cause the HPA to create up to 5 pods under load, so we'll quickly spill over the current single node.
 
-Set the request and limits in the deployment to 1 core:
+Run the command below to set the request and limits for the deployment to 800 millicores (0.8 cores):
 
 ```bash
 kubectl patch deployment aks-helloworld -n helloworld \
@@ -152,26 +152,25 @@ Confirm the settings have been reverted:
 az aks nodepool show -g $RG --cluster-name $CLUSTER_NAME -n $NODEPOOL_NAME -o yaml | grep 'enableAutoScaling\|minCount\|maxCount'
 ```
 
-On a separete terminal, start and jump into an Ubuntu pod
+On a separate terminal, run and shell into an Ubuntu pod:
 
 ```bash
 kubectl run -it --rm ubuntu --image=ubuntu -- bash
 ```
 
-Run the following in the pod to install ApacheBench
+Run the following in the pod to install ApacheBench:
 
 ```bash
-apt update
-apt install -y apache2-utils 
+apt update && apt install -y apache2-utils 
 ```
 
-Run some load against the external IP of your helloworld service (keep the trailing `/` in the url below)
+Run a load against the external IP of your "helloworld" service (keep the trailing `/` in the url below):
 
 ```bash
 ab -t 240 -c 50 -n 200000 http://<EXTERNAL_IP>/
 ```
 
-You should get output like the following
+You should get output like the following:
 
 ```bash
 Benchmarking 10.140.0.5 (be patient)
@@ -188,13 +187,13 @@ Completed 100000 requests
 Finished 100000 requests
 ```
 
-On the check the hpa, pods and nodes
+Next, list the HPA, pods, and nodes:
 
 ```bash
 kubectl get hpa,pods,nodes -n helloworld
 ```
 
-You should see the targets in the hpa output increasing. Once it reaches over 50%, then the replicas should increase.
+You should see the targets in the HPA output increasing. Once it reaches over 50%, then the replicas should increase.
 
 ```bash
 NAME                                                 REFERENCE                   TARGETS           MINPODS   MAXPODS   REPLICAS   AGE
