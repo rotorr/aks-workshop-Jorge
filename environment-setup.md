@@ -39,11 +39,23 @@ The following are pre-requisites before starting the labs:
 
 ## During Lab Day
 
-Login to Azure.
+Login to [Azure Portal](https://portal.azure.com/) with your credentials
+
+Using Terminal login to Azure with this command:
 
 ```bash
 az login
 ```
+
+You should be prompted to login using browser:
+
+```txt
+To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code <provided> to authenticate.
+```
+
+Navigate to the [device login](https://microsoft.com/devicelogin) link in a browser, enter the provided code, then enter your Azure username and password.
+
+Return to the terminal and select your subscription from the list.
 
 Install the following Azure CLI extensions:
 
