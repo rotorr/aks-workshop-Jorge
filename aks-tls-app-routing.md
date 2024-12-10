@@ -42,7 +42,7 @@ az aks approuting enable --resource-group $RG --name $CLUSTER_NAME
 Create a new Azure Key Vault with Azure role-based access control (Azure RBAC) enabled:
 
 ```bash
-AKV_NAME="$INITIALS-kv"
+AKV_NAME=$INITIALS-kv
 az keyvault create --name $AKV_NAME --resource-group $RG --location $LOCATION --enable-rbac-authorization
 ```
 
@@ -61,12 +61,28 @@ Update the app routing add-on to enable the Azure Key Vault secret store CSI dri
 az aks approuting update --resource-group $RG --name $CLUSTER_NAME --enable-kv --attach-kv ${KEYVAULT_ID}
 ```
 
-## Create a public Azure DNS zone
+## Create a domain registration
+
+Choose a domain name expected to be unique:
+
+```bash
+DOMAIN_NAME=$INITIALS-azuredemo.com
+```
+
+### Option 1: Create Domain registration (optional)
+
+This step is optional, but without this validation will be only via IP. If you choose to register a domain, you can confirm it is not registered by adding the `--dryrun` flag to the command below:
+
+```bash
+az appservice domain create -g $RG --hostname $DOMAIN_NAME \
+--contact-info @manifests/contact-info.json --accept-terms 
+```
+
+### Option 2: Create a public Azure DNS zone
 
 Create an Azure DNS zone using the az network dns zone create command.
 
 ```bash
-DOMAIN_NAME=$INITIALS-azuredemo2.com
 az network dns zone create --resource-group $RG --name $DOMAIN_NAME
 ```
 
@@ -88,17 +104,7 @@ az aks approuting zone add -g $RG --name $CLUSTER_NAME --ids=${ZONE_ID} --attach
 
 ### Option 1: Using trusted CA certificate
 
-This option requires first registering a domain and then issuing a Trusted CA certificate
-
-#### Create Domain registration
-
-This step is optional, but if you choose to get a domain registered, make sure it is unique and not registered by adding the `--dryrun` flag to the command below:
-
-```bash
-DOMAIN_NAME=$INITIALS-azuredemo.com
-az appservice domain create -g $RG --hostname $DOMAIN_NAME \
---contact-info @manifests/contact-info.json --accept-terms 
-```
+This option requires using a registered domain and then issuing a Trusted CA certificate
 
 #### Generate trusted CA certificate
 
@@ -114,7 +120,8 @@ sudo certbot certonly --agree-tos --register-unsafely-without-email  --manual \
 On a separate terminal run the command below. You will need to export variables and copy challenge value:
 
 ```bash
-az network dns record-set txt add-record --resource-group $RG --zone-name $DOMAIN_NAME --record-set-name _acme-challenge --value <challenge_value>
+CHALLENGE=<challenge_value>
+az network dns record-set txt add-record --resource-group $RG --zone-name $DOMAIN_NAME --record-set-name _acme-challenge --value $CHALLENGE
 ```
 
 Before confirming challenge, confirm TXT DNS record has been propagated using this command:
