@@ -21,6 +21,15 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     LOCATION=eastus2
     ```
 
+## Create Azure Container Registry (ACR)
+
+ACR will be used in subsequent labs
+
+```bash
+ACR_NAME=acr$INITIALS$RANDOM
+az acr create -n $ACR_NAME -g $RG --sku Standard
+```
+
 ## Create resource group and a basic cluster using Azure CLI
 
 1. Create Resource Group.
@@ -37,14 +46,15 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     echo "AKS Cluster Name: $CLUSTER_NAME"
     ```
 
-1. Create a simple AKS cluster with 2 nodes and using a specific kubernetes version:
+1. Create a simple AKS cluster with 2 nodes, attaching ACR and using a specific kubernetes version:
 
     ```bash
     KUBERNETES_VERSION='1.29.9'
     az aks create --name $CLUSTER_NAME \
+                  --resource-group $RG \
                   --generate-ssh-keys \
                   --node-count 2 \
-                  --resource-group $RG \
+                  --attach-acr $ACR_NAME \
                   --kubernetes-version $KUBERNETES_VERSION
     ```
 
@@ -62,21 +72,6 @@ This exercise will cover deployment of a basic AKS cluster. This will be use as 
     ```bash
     kubectl get nodes
     ```
-
-### Create Azure Container Registry (ACR)
-
-ACR will be used in subsequent labs
-
-```bash
-ACR_NAME=acr$INITIALS$RANDOM
-az acr create -n $ACR_NAME -g $RG --sku Standard
-```
-
-Attach ACR to existing AKS cluster
-
-```bash
-az aks update -g $RG -n $CLUSTER_NAME --attach-acr $ACR_NAME
-```
 
 ### Create a new Deployment
 

@@ -34,15 +34,6 @@ az login
 az group create --name $RG --location $LOCATION
 ```
 
-## Create Azure Container Registry
-
-Create ACR:
-
-```bash
-ACR_NAME=acr$RANDOM
-az acr create -n $ACR_NAME -g $RG --sku Standard
-```
-
 ## Create AKS Virtual Network and subnet
 
 Export environment variables required for Virtual Network:
