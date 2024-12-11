@@ -30,7 +30,7 @@ If not already connected, connect to the cluster from your local client machine.
 az aks get-credentials --name $CLUSTER_NAME -g $RG
 ```
 
-## Enable Application Routing add-on
+## Enable KEDA add-on
 
 Run the following command to enable KEDA, workload identity and oidc issuer add-ons:
 
@@ -51,7 +51,7 @@ az aks show --name $CLUSTER_NAME --resource-group $RG \
 Create an Azure Service Bus namespace using this command.
 
 ```bash
-SB_NAME=kedasb
+SB_NAME=$INITIALS-kedasb
 SB_HOSTNAME="${SB_NAME}.servicebus.windows.net"
 
 az servicebus namespace create --name $SB_NAME -g $RG --disable-local-auth
@@ -338,6 +338,12 @@ Delete kubernetes namespace:
 
 ```bash
 kubectl delete namespace $NAMESPACE
+```
+
+Delete service bus as this will not be used in other labs:
+
+```bash
+az servicebus namespace delete --name $SB_NAME --resource-group $RG
 ```
 
 We will keep the resource group for subsequent labs, unless it is no longer needed, use this command to delete it:
