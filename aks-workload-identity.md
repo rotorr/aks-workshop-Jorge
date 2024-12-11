@@ -179,13 +179,7 @@ Get the ACR FQDN for later use:
 ACR_FQDN=$(az acr show -n $ACR_NAME -o tsv --query loginServer)
 ```
 
-Now we need to do is create a pod that uses our federated service account with our test app loaded. Set the service account name we created earlier:
-
-```bash
-SA_NAME=testmi-sa
-```
-
-Next create a pod that uses the service account with workload identity enabled:
+Now we need to do is create a pod that uses the service account with workload identity enabled:
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -197,7 +191,7 @@ metadata:
   labels:
     azure.workload.identity/use: "true"
 spec:
-  serviceAccountName: ${SA_NAME}
+  serviceAccountName: ${MANAGED_IDENTITY_NAME}-sa
   containers:
     - image: ${ACR_FQDN}/${IMAGE_NAME}
       name: wi-kv-test
@@ -205,7 +199,7 @@ spec:
       - name: KEY_VAULT_NAME
         value: ${KEY_VAULT_NAME}
       - name: SECRET_NAME
-        value: Secret    
+        value: Secret
   nodeSelector:
     kubernetes.io/os: linux
 EOF
@@ -234,26 +228,24 @@ You now have a cluster enabled with the OIDC Issuer and the Azure Workload Ident
 
 ## Cleanup
 
-Before moving to the next lab, do not forget to delete running pod and namespace:
+Before moving to the next lab, do not forget to delete namespace:
 
 ```bash
-kubectl delete pod wi-kv-test -n $NAMESPACE
 kubectl delete ns $NAMESPACE
 ```
 
 ### Delete Azure resources
 
-Delete keyvault:
+Only uf you are done with all labs, then clean up by deleting the resource group, otherwise delete individual resources below.
+
+```bash
+az group delete --name $RG --yes --no-wait
+```
+
+Delete key vault (only delete if not planning on doing other labs):
 
 ```bash
 az keyvault delete -n $KEY_VAULT_NAME -g $RG
-```
-
-Delete fedreated credentials:
-
-```bash
-az identity federated-credential delete -n $MANAGED_IDENTITY_NAME \
-  --identity-name $MANAGED_IDENTITY_NAME-federated-id -g $RG
 ```
 
 Delete managed identity:
@@ -264,7 +256,7 @@ az identity delete -n $MANAGED_IDENTITY_NAME -g $RG
 
 ### Disable workload identity (optional)
 
-This command it is included for reference, however we recommend keeping workload identity for subsequent labs (unless epxlicitely recommended to be removed in a subsequent lab).
+This command is included for reference, however we recommend keeping workload identity for subsequent labs (unless explicitly recommended to be removed in a subsequent lab).
 
 ```bash
 az aks update --resource-group "${RG}" --name "${CLUSTER_NAME}" --disable-workload-identity
