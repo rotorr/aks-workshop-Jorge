@@ -1,13 +1,13 @@
 # AKS Cluster Upgrade
 
 > Estimated Duration: 60 minutes
-> Requires AKS cluster created in: [basic AKS cluster](aks-basic-cluster.md).
+>> Requires AKS cluster created in: [basic AKS cluster](aks-basic-cluster.md).
 
 You are given the following requirements:
 
 * Initial testing should use a manual upgrade process
 * The application pod count should never go below 1 during an upgrade
-* Day 1 (simulated): Due to a critical OS level CVE you've been asked to upgrade the node pool **NODE IMAGE ONLY**
+* Day 1 (simulated): Due to a critical OS level CVE you've been asked to upgrade node pool's **NODE IMAGE ONLY**
 * Day 2 (simulated): Due to a critical Kubernetes level CVE you've been asked to upgrade the control plane and the node pool Kubernetes version to the next incremental version (major or minor)
 * Day 3 (simulated): To take advantage of some new Kubernetes features you've been asked to upgrade the user pool Kubernetes version to the next incremental version (major or minor)
   
@@ -54,12 +54,17 @@ If not already deployed, then proceed to deploy the aks-helloworld application.
     kubectl get all -n helloworld
     ```
 
+1. Scale replica count to 2:
+
+    ``bash
+    kubectl scale deployment aks-helloworld --replicas=2 -n helloworld
+    ```
+
 ## Deploy pod disruption budget
 
 Kubernetes provides [Pod Disruption Budgets](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) as a mechanism to ensure a minimum pod count during [Disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/).
 
 We need to ensure that there is minimum of one pod, by deploying the following pdb:
-Deply the pdb.
 
 ```bash
 kubectl apply -f manifests/pdb.yaml -n helloworld
@@ -68,7 +73,7 @@ kubectl apply -f manifests/pdb.yaml -n helloworld
 Confirm the pdb has been deployed:
 
 ```bash
-kubectl get pdb
+kubectl get pdb -n helloworld
 ```
 
 ## Upgrade the node pool image
@@ -90,7 +95,7 @@ Get the latest node pool node image version
 
 ```bash
 az aks nodepool get-upgrades -g $RG --cluster-name $CLUSTER_NAME --nodepool-name $NODEPOOL_NAME -o tsv --query latestNodeImageVersion
-AKSUbuntu-2204gen2containerd-202411.03.0
+AKSUbuntu-2204gen2containerd-202411.12.0
 ```
 
 In the above check you may have found that you're already running the latest node image version. If so, no action is needed. If not, you can upgrade as follows (this will take 5-10 minutes):
@@ -103,7 +108,7 @@ az aks nodepool upgrade --resource-group $RG --cluster-name $CLUSTER_NAME \
 On a separate terminal, you can check the nodes as they get upgraded (this will take a few minutes):
 
 ```bash
-kubectl get nodes -o wide
+kubectl get nodes -o wide -w
 ```
 
 Additionally it is recommended you check the events for errors.
@@ -123,7 +128,7 @@ Normal    Upgrade                   Node/aks-nodepool1-33528281-vmss000009   Del
 Normal    RemovingNode              Node/aks-nodepool1-33528281-vmss000009   Node aks-nodepool1-33528281-vmss000009 event: Removing Node aks-nodepool1-33528281-vmss000009 from Controller
 ```
 
-Once the nodes have been reimaged check the image version to confirmed they have been upgraded to the latest image version:
+Once the nodes have been re-imaged check the image version to confirmed they have been upgraded to the latest image version:
 
 ```bash
 az aks nodepool show -g $RG --cluster-name $CLUSTER_NAME --nodepool-name $NODEPOOL_NAME -o tsv --query nodeImageVersion
@@ -207,9 +212,9 @@ aks-nodepool1-33528281-vmss00000b   Ready      <none>   86s   v1.30.0   10.224.0
 aks-nodepool1-33528281-vmss00000c   NotReady   <none>   94s   v1.30.0   10.224.0.8    <none>        Ubuntu 22.04.5 LTS   5.15.0-1074-azure   containerd://1.7.23-1
 ```
 
-In the above, notice all the single instance terminations and think about the impact that could have on your running application
-It would eventually make sense to increase all of their replica counts and implement PodDisruptionBudgets for those as well
-but thats out of scope for this excercise.
+In the above, notice all the single instance terminations and think about the impact that could have on your running application.
+It would eventually make sense to increase all of their replica counts and implement `PodDisruptionBudgets` for those as well
+but that's out of scope for this exercise.
 
 ## BONUS: Enable Automatic Upgrades to the 'patch' channel and set a Planned Maintenance Window
 
@@ -256,4 +261,12 @@ timeInWeek:
   hourSlots:
   - 1
 type: null
+```
+
+## Cleanup
+
+If you are done with all labs, then clean up by deleting the resource group, otherwise keep the resource group to save time in subsequent labs.
+
+```bash
+az group delete --name $RG --yes --no-wait
 ```
