@@ -31,7 +31,7 @@ az aks get-credentials --name $CLUSTER_NAME -g $RG
 
 ## Enable Application Routing add-on
 
-Run the following command to enable the `approunting` add-on if not already enabled
+Run the following command to enable the `approuting` add-on if not already enabled
 
 ```bash
 az aks approuting enable --resource-group $RG --name $CLUSTER_NAME
@@ -102,6 +102,12 @@ az aks approuting zone add -g $RG --name $CLUSTER_NAME --ids=${ZONE_ID} --attach
 
 ## Generate a TLS certificate
 
+Export certificate name variable:
+
+```bash
+CERT_NAME=aks-ingress-cert
+```
+
 ### Option 1: Using trusted CA certificate
 
 This option requires using a registered domain and then issuing a Trusted CA certificate
@@ -113,7 +119,7 @@ This certificate is issued by Let's Encrypt CA and requires installing `cerbot` 
 Run the following command:
 
 ```bash
-sudo certbot certonly --agree-tos --register-unsafely-without-email  --manual \
+sudo certbot certonly --agree-tos --register-unsafely-without-email --manual \
 --preferred-challenges dns -d $DOMAIN_NAME -d *.$DOMAIN_NAME
 ```
 
@@ -127,23 +133,22 @@ az network dns record-set txt add-record --resource-group $RG --zone-name $DOMAI
 Before confirming challenge, confirm TXT DNS record has been propagated using this command:
 
 ```bash
-nslookup -q=txt _acme-challenge.$DOMAIN
+nslookup -q=txt _acme-challenge.$DOMAIN_NAME
 ```
 
-Once the record is successfully validate, use the command below to export certificate into pfx format (provide sudo password if prompted, but skip export password when prompted):
+Once the record is successfully validated, use the command below to export certificate into pfx format (provide sudo password if prompted, but skip export password when prompted):
 
 ```bash
 sudo openssl pkcs12 -export -out $CERT_NAME.pfx -inkey /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem \
 -in /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem
 ```
 
-### Option 2: Using self-signed certification
+### Option 2: Using self-signed certificate
 
-> In this option you will only be able to valiate using `curl` command to resolve domain.
+> In this option you will only be able to validate using `curl` command to resolve domain.
 Generate a TLS certificate using the following command:
 
 ```bash
-CERT_NAME=aks-ingress-cert
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -out aks-ingress-tls.crt \
     -keyout aks-ingress-tls.key \
@@ -176,7 +181,7 @@ Import the certificate using this command:
 az keyvault certificate import --vault-name $AKV_NAME --name $CERT_NAME --file $CERT_NAME.pfx
 ```
 
-## Deploy test application
+## Deploy test application to AKS
 
 Create a namespace:
 
@@ -191,12 +196,24 @@ Deploy using this command:
 kubectl apply -f manifests/aks-helloworld.yaml -n $NAMESPACE
 ```
 
+Confirm deployment is successful and pod is in `RUNNING` state:
+
+```bash
+kubectl get pods -n $NAMESPACE
+```
+
 ## Create Ingress that uses host name and certificate from Azure Key Vault
 
 Get the certificate URI to use in the Ingress from Azure Key Vault using this command:
 
 ```bash
 KV_CERT_URI=$(az keyvault certificate show --vault-name $AKV_NAME --name $CERT_NAME --query "id" --output tsv | tr -d '\r')
+```
+
+Before running next command verify required variables are exported:
+
+```bash
+echo CERT_URI: $KV_CERT_URI, DOMAIN_NAME: $DOMAIN_NAME, NAMESPACE: $NAMESPACE
 ```
 
 Create the App Routing Ingress using this command:
@@ -231,13 +248,17 @@ EOF
 
 ## Validate test application
 
+Confirm secret was created, pods are running (you should see a new one for `keyvault` injection) and ingress has IP `ADDRESS` assigned:
+
+```bash
+kubectl get pods,secret,ingress -n $NAMESPACE
+```
+
 Get the external IP for the `nginx-ingress` service:
 
 ```bash
 EXTERNAL_IP=$(kubectl get ingress -n $NAMESPACE -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
-
-az network dns record-set a add-record --ipv4-address $EXTERNAL_IP --record-set-name public -g $RG --zone-name $DOMAIN_NAME
 
 Verify your ingress is properly configured with TLS using the following command:
 
@@ -245,9 +266,17 @@ Verify your ingress is properly configured with TLS using the following command:
 curl -v -k --resolve $DOMAIN_NAME:443:$EXTERNAL_IP https://$DOMAIN_NAME
 ```
 
-You should see the server certificate in the output
+You should see the server certificate (either self-signed or CA issued) in the output
 
-If a domain registration and Trusted Certificate was used, then you can validate using the qualified domain name:
+### Trusted CA with domain registration validation
+
+If a domain registration and Trusted Certificate was used, then you can additionally validate using the qualified domain name. Create a DNS record to point to the ingress IP:
+
+```bash
+az network dns record-set a add-record --ipv4-address $EXTERNAL_IP --record-set-name "@" -g $RG --zone-name $DOMAIN_NAME
+```
+
+Test reaching the fully qualified domain name:
 
 ```bash
 curl -v https://$DOMAIN_NAME
@@ -255,7 +284,13 @@ curl -v https://$DOMAIN_NAME
 
 ## Cleanup
 
-Once done testing, remove the namespace:
+If you are done with all labs and have no plan to continue further, then clean up by deleting the resource group:
+
+```bash
+az group delete --name $RG --yes --no-wait
+```
+
+Otherwise remove the following resources, keeping the AKS cluster:
 
 ```bash
 kubectl delete namespace $NAMESPACE
