@@ -19,6 +19,7 @@ You need to fulfill these [requirements](environment-setup.md) to complete this 
 These docs will help you achieving these objectives:
 
 - [Create a private AKS cluster](https://learn.microsoft.com/en-us/azure/aks/private-clusters)
+- [Sign in to a Linux virtual machine in Azure by using Microsoft Entra ID and OpenSSH](https://learn.microsoft.com/en-us/entra/identity/devices/howto-vm-sign-in-azure-ad-linux)
 
 ## Create resource group and virtual network
 
@@ -114,11 +115,9 @@ Export environment variables:
 ```bash
 # Variables
 VM_NAME=vm-jumpbox
-VM_NSG_NAME="${VM_NAME}-nsg"
 VM_SKU=Standard_B2ms
 VM_SUBNET_NAME=vm-subnet
 VM_SUBNET_PREFIX=10.13.2.0/24
-IMAGE_URN=$(az vm image list -f "ubuntu-24_04-lts" -s "server" -l "$LOCATION" --query '[0].urn' -o tsv)
 ```
 
 Create Subnet for the jumpbox:
@@ -130,10 +129,9 @@ az network vnet subnet create -n $VM_SUBNET_NAME --vnet-name $VNET_NAME -g "$RG"
 Create jumpbox VM:
 
 ```bash
-az vm create -n $VM_NAME -g $RG -l $LOCATION --image $IMAGE_URN --size $VM_SKU --generate-ssh-keys \
+az vm create -n $VM_NAME -g $RG --image Ubuntu2204 --size $VM_SKU --generate-ssh-keys \
   --vnet-name $VNET_NAME --subnet $VM_SUBNET_NAME \
-  --assign-identity --admin-username azureuser \
-  --nsg $VM_NSG_NAME --nsg-rule SSH
+  --assign-identity --admin-username azureuser
 ```
 
 Enable the Microsoft Entra login VM extension:
@@ -143,37 +141,52 @@ az vm extension set --publisher Microsoft.Azure.ActiveDirectory \
     --name AADSSHLoginForLinux -g $RG --vm-name $VM_NAME
 ```
 
-Grant VM admin login to your Entra login:
+Get username and Resource Group ID needed to grant VM admin login to your Entra login:
 
 ```bash
 USERNAME=$(az account show --query user.name --output tsv)
 RG_ID=$(az group show --resource-group $RG --query id -o tsv)
 ```
 
-Next assign role:
+Next assign VM Admin Login role to your username:
 
 ```bash
 az role assignment create --role "Virtual Machine Administrator Login" --assignee $USERNAME --scope $RG_ID
 ```
 
-NOTE: if your Entra domain and login username do not match then use these command instead:
+<details>
+  <summary>This is only needed if your Entra domain and login username do not match</summary>
+Use this command to assigne role to User ID:
 
 ```bash
 USERID=$(az ad user list --filter "mail eq '$USERNAME'" --query [0].id -o tsv)
 az role assignment create --role "Virtual Machine Administrator Login" --assignee-object-id $USERID --scope $RG_ID
 ```
+</details>
 
-Create managed identity and assign role to be able to login to AKS from jumpbox (only needed if your subscription does not allow you to log in via cli using device code):
+Export SSH configuration:
+
+```bash
+az ssh config --file ~/.ssh/config -n $VM_NAME -g $RG
+```
+
+<details>
+  <summary>This section is only needed if your subscription does not allow you to log in via cli using device code</summary>
+Create managed identity and assign Contributor role to be able to login to Azure from jumpbox :
 
 ```bash
 # Managed identity
 VM_IDENTITY_NAME=${VM_NAME}-identity
 az identity create -g $RG -n $VM_IDENTITY_NAME
-az vm identity assign -n $VM_NAME -g $RG --identities ${VM_NAME}-identity
-VM_IDENTITY_PRINCIPALID=$(az identity show -n ${VM_NAME}-identity -g $RG --query principalId -o tsv)
-VM_IDENTITY_ID=$(az identity show -n ${VM_NAME}-identity -g $RG --query id -o tsv)
-RG_ID=$(az group show -n $RG --query id -o tsv)
+az vm identity assign -n $VM_NAME -g $RG --identities $VM_IDENTITY_NAME
+VM_IDENTITY_PRINCIPALID=$(az identity show -n $VM_IDENTITY_NAME -g $RG --query principalId -o tsv)
+VM_IDENTITY_ID=$(az identity show -n $VM_IDENTITY_NAME -g $RG --query id -o tsv)
 az role assignment create --assignee $VM_IDENTITY_PRINCIPALID --role Contributor --scope $RG_ID
+```
+
+Assign "Kubernetes Cluster Admin" role to the new VM identity so that you can connect to the AKS cluster from the Jumbbox:
+
+```bash
 AKS_ID=$(az aks show --resource-group $RG --name $PRIVATE_AKS --query id --output tsv)
 az role assignment create --assignee $VM_IDENTITY_PRINCIPALID --role "Azure Kubernetes Service RBAC Cluster Admin" --scope $AKS_ID
 ```
@@ -183,6 +196,7 @@ Output value of `VM_IDENTITY_ID` and copy it so that it can be pasted when conne
 ```bash
 echo $VM_IDENTITY_ID
 ```
+</details>
 
 Create remote alias to SSH into jumpbox using:
 
@@ -190,12 +204,23 @@ Create remote alias to SSH into jumpbox using:
 alias remote="az ssh vm -n $VM_NAME -g $RG"
 ```
 
-Run the following commands to install kubectl in Jumpbox VM and log into AKS:
+Run the following commands to install kubectl in Jumpbox VM:
 
 ```bash
 remote "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash"
 remote "sudo az aks install-cli"
-remote "az login --identity -u $VM_IDENTITY_ID"
+remote "az login"
+```
+
+Log into Azure. **NOTE:** if your subscription does not support device login, then use this command to login with the "VM_IDENTITY_ID" created: `az login --identity -u $VM_IDENTITY_ID`
+
+```bash
+remote "az login"
+```
+
+Resume logging into AKS:
+
+```bash
 remote "az aks get-credentials -n $PRIVATE_AKS -g $RG"
 remote "kubectl get node"
 ```
@@ -210,7 +235,6 @@ Run the following commands to create a namespace and deploy hello world applicat
 
 ```bash
 remote "kubectl create namespace helloworld"
-remote "cp manifests/aks-helloworld-basic.yaml"
 remote "kubectl apply -f aks-workshop/manifests/aks-helloworld-basic.yaml -n helloworld"
 ```
 
@@ -228,7 +252,7 @@ Run this command until an `EXTERNAL_IP` is shown for the service (this may take 
 remote "kubectl get service -n helloworld"
 ```
 
-Run curl command to confirm the service is reachable on that address:
+Copy the `EXTERNAL_IP` value and run the curl command to confirm the service is reachable on that address:
 
 ```bash
 remote "curl -L http://<EXTERNAL_IP>"
