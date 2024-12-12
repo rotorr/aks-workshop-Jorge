@@ -51,6 +51,7 @@ We will create the secrets with Service Principal values, so first we must creat
     # Variables
     INITIALS="abc"
     RG=aks-$INITIALS-rg
+    CLUSTER_NAME=aks-$INITIALS
     SP_NAME="sp-aks-${INITIALS}-gh"
     ```
 
@@ -86,9 +87,9 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
 
 1. In your browser, navigate to the fork of your GitHub repository.
 
-1. Click on on the **Settings** of the project (not the user setting).
+1. Click on on the **Settings** of the project (not the user settings).
 
-1. Under **Security** click on **Secrets and variables** then click on **Actions**
+1. Under **Security** click to expand **Secrets and variables**, then click on **Actions**
 
 1. Click on **New repository secret**.
 
@@ -134,7 +135,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     mkdir -p .github/workflows
     ```
 
-1. Create the `workflow.yaml` file in the new directory with this content. **_NOTE:_** This workflow build, tag, and push the web image to your Azure Container Registry:
+1. Create a `workflow.yaml` file in the new directory with this content. **_NOTE:_** This workflow builds, tags, and pushes a web application image to your Azure Container Registry:
 
     ```yaml
     name: Demo-API-CI
@@ -186,10 +187,11 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
         - main
     ```
 
-1. Obtain the Azure Container Registry Server Name.
+1. We will use the Azure Container Registry (ACR) created in the [AKS Basic Cluster](aks-basic-cluster.md) lab. Obtain the Azure Container Registry Server Name:
 
     ```bash
-    $ACR_SERVER_NAME=(az acr show -n $ACR_NAME --query loginServer -o tsv)
+    ACR_SERVER_NAME=$(az acr list --resource-group $RG --query '[0].loginServer' -o tsv)
+    echo $ACR_SERVER_NAME
     ```
 
 1. Replace the **workflow.yaml** file with the correct values.
