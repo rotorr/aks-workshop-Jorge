@@ -143,6 +143,12 @@ sudo openssl pkcs12 -export -out $CERT_NAME.pfx -inkey /etc/letsencrypt/live/$DO
 -in /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem
 ```
 
+Change ownership of exported certificate file:
+
+```bash
+sudo chown $(whoami) $CERT_NAME.pfx
+```
+
 ### Option 2: Using self-signed certificate
 
 > In this option you will only be able to validate using `curl` command to resolve domain.
