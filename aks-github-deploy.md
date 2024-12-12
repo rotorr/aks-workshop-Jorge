@@ -231,26 +231,26 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     > **_NOTE:_** This adds a new job to deploy the app in the AKS cluster using helm.
 
     ```yaml
-    deploy:
+      deploy:
         runs-on: ubuntu-latest
         needs: build
         steps:
         - name: Check Out Repo 
-        uses: actions/checkout@v2
+          uses: actions/checkout@v2
 
         # Set the target Azure Kubernetes Service (AKS) cluster. 
         - uses: azure/aks-set-context@v1
-        with:
+          with:
             creds: '${{ secrets.AZURE_CREDENTIALS }}'
             cluster-name: ${{ env.CLUSTER_NAME }}
             resource-group: ${{ env.CLUSTER_RESOURCE_GROUP }}
 
         - name: Install Helm
-        uses: azure/setup-helm@v4.2.0
+          uses: azure/setup-helm@v4.2.0
 
         # Deploy app to AKS
         - name: Deploy to AKS using Helm
-        run: |
+          run: |
             helm upgrade --install demo-api charts/demo-api \
             --set image=${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }} \
             --namespace ${{ env.NAMESPACE }} --create-namespace
