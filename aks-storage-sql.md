@@ -95,6 +95,7 @@ Get the SQL pod name:
 
 ```bash
 POD_NAME=$(kubectl -n sql get pod -o custom-columns=:metadata.name | awk NF)
+```
 
 Verify the pod is `RUNNNING`:
 
@@ -126,7 +127,7 @@ Get the SQL Server service IP:
 kubectl get svc mssql-deployment -n sql -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
-From Visual Studio Code click on the "SQL Server" extension toolbar icon, then click on Add Connection. When prompted enter the IP as the Server Name, click Enter for the default Database name. Click on SQL Login and provide the `sa` User name and password.
+From Visual Studio Code click on the "SQL Server" extension toolbar icon, then click on Add Connection. When prompted enter the IP as the Server Name, enter master as the Database name. Click on SQL Login and provide the `sa` User name and password.
 
 ![Visual Studio Code - add SQL Server connection](content/sql-add-connection.png)
 
@@ -135,5 +136,5 @@ From Visual Studio Code click on the "SQL Server" extension toolbar icon, then c
 Delete the namespace from AKS:
 
 ```bash
-kubectl delete namespace -n sql
+kubectl delete namespace sql
 ```
