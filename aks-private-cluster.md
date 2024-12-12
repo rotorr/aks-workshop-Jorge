@@ -155,13 +155,13 @@ az role assignment create --role "Virtual Machine Administrator Login" --assigne
 ```
 
 <details>
-  <summary>This is only needed if your Entra domain and login username do not match</summary>
-Use this command to assigne role to User ID:
+  <summary>This is only needed if your Entra domain and login username do not match (click to expand/collapse)</summary>
+  Use this command to assigne role to User ID:
 
-```bash
-USERID=$(az ad user list --filter "mail eq '$USERNAME'" --query [0].id -o tsv)
-az role assignment create --role "Virtual Machine Administrator Login" --assignee-object-id $USERID --scope $RG_ID
-```
+  ```bash
+  USERID=$(az ad user list --filter "mail eq '$USERNAME'" --query [0].id -o tsv)
+  az role assignment create --role "Virtual Machine Administrator Login" --assignee-object-id $USERID --scope $RG_ID
+  ```
 </details>
 
 Export SSH configuration:
@@ -171,31 +171,31 @@ az ssh config --file ~/.ssh/config -n $VM_NAME -g $RG
 ```
 
 <details>
-  <summary>This section is only needed if your subscription does not allow you to log in via cli using device code</summary>
-Create managed identity and assign Contributor role to be able to login to Azure from jumpbox :
+  <summary>This section is only needed if your subscription does not allow you to log in via cli using device code (click to expand/collapse)</summary>
+  Create managed identity and assign Contributor role to be able to login to Azure from jumpbox :
 
-```bash
-# Managed identity
-VM_IDENTITY_NAME=${VM_NAME}-identity
-az identity create -g $RG -n $VM_IDENTITY_NAME
-az vm identity assign -n $VM_NAME -g $RG --identities $VM_IDENTITY_NAME
-VM_IDENTITY_PRINCIPALID=$(az identity show -n $VM_IDENTITY_NAME -g $RG --query principalId -o tsv)
-VM_IDENTITY_ID=$(az identity show -n $VM_IDENTITY_NAME -g $RG --query id -o tsv)
-az role assignment create --assignee $VM_IDENTITY_PRINCIPALID --role Contributor --scope $RG_ID
-```
+  ```bash
+  # Managed identity
+  VM_IDENTITY_NAME=${VM_NAME}-identity
+  az identity create -g $RG -n $VM_IDENTITY_NAME
+  az vm identity assign -n $VM_NAME -g $RG --identities $VM_IDENTITY_NAME
+  VM_IDENTITY_PRINCIPALID=$(az identity show -n $VM_IDENTITY_NAME -g $RG --query principalId -o tsv)
+  VM_IDENTITY_ID=$(az identity show -n $VM_IDENTITY_NAME -g $RG --query id -o tsv)
+  az role assignment create --assignee $VM_IDENTITY_PRINCIPALID --role Contributor --scope $RG_ID
+  ```
 
-Assign "Kubernetes Cluster Admin" role to the new VM identity so that you can connect to the AKS cluster from the Jumbbox:
+  Assign "Kubernetes Cluster Admin" role to the new VM identity so that you can connect to the AKS cluster from the Jumbbox:
 
-```bash
-AKS_ID=$(az aks show --resource-group $RG --name $PRIVATE_AKS --query id --output tsv)
-az role assignment create --assignee $VM_IDENTITY_PRINCIPALID --role "Azure Kubernetes Service RBAC Cluster Admin" --scope $AKS_ID
-```
+  ```bash
+  AKS_ID=$(az aks show --resource-group $RG --name $PRIVATE_AKS --query id --output tsv)
+  az role assignment create --assignee $VM_IDENTITY_PRINCIPALID --role "Azure Kubernetes Service RBAC Cluster Admin" --scope $AKS_ID
+  ```
 
-Output value of `VM_IDENTITY_ID` and copy it so that it can be pasted when connected to jumpbox
+  Output value of `VM_IDENTITY_ID` and copy it so that it can be pasted when connected to jumpbox
 
-```bash
-echo $VM_IDENTITY_ID
-```
+  ```bash
+  echo $VM_IDENTITY_ID
+  ```
 </details>
 
 Create remote alias to SSH into jumpbox using:
