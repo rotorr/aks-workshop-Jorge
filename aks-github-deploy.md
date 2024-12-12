@@ -171,8 +171,8 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
         - name: Build, tag, and push image to ACR
           uses: docker/build-push-action@v2
           with:
-            context: ./src/demoapi
-            file: Dockerfile
+            context: ./src
+            file: ./src/Dockerfile
             push: true
             tags: |
                 ${{ env.LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.run_number }}
