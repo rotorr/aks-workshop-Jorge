@@ -264,7 +264,13 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     git push
     ```
 
-1. Check for a new workflow run triggered in the Actions tab of your GitHub Repository.
+1. Check for a new workflow run triggered in the Actions tab of your GitHub Repository and confirm it completed succesfully.
+
+1. If not already connected, connect to the AKS cluster from your local client machine.
+
+    ```bash
+    az aks get-credentials --name $CLUSTER_NAME -g $RG
+    ```
 
 1. Copy the next command in the terminal to check your cluster for the expected resources:
 
