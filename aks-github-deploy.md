@@ -141,7 +141,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     name: Demo-API-CI
 
     on:
-    push:
+      push:
         branches:
         - main
 
@@ -153,7 +153,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     CLUSTER_RESOURCE_GROUP: <clusterResourceGroup>     
 
     jobs:
-    build:
+      build:
         runs-on: ubuntu-latest
         steps:   
         - name: Check Out Repo 

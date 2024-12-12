@@ -1,7 +1,7 @@
 name: Demo-API-CI
 
 on:
-push:
+  push:
     branches:
     - main
 
@@ -13,7 +13,7 @@ CLUSTER_NAME: aks-jrb
 CLUSTER_RESOURCE_GROUP: aks-jrb-rg     
 
 jobs:
-build:
+  build:
     runs-on: ubuntu-latest
     steps:   
     - name: Check Out Repo 
