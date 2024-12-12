@@ -72,8 +72,6 @@ az aks update --name $CLUSTER_NAME --resource-group $RG \
 Retrieve the user-assigned managed identity created by the add-on. You should also retrieve the identity's `clientId`, which you'll use in later steps when creating a `SecretProviderClass`.
 
 ```bash
-IDENTITY_OBJECT_ID=$(az aks show -g $RG --name $CLUSTER_NAME --query \
-addonProfiles.azureKeyvaultSecretsProvider.identity.objectId -o tsv)
 IDENTITY_CLIENT_ID=$(az aks show -g $RG --name $CLUSTER_NAME --query \
 addonProfiles.azureKeyvaultSecretsProvider.identity.clientId -o tsv | tr -d '\r')
 ```
@@ -138,7 +136,7 @@ Retrieve the Azure Keyvault Tenant ID:
 TENANT_ID=$(az keyvault show --name $AKV_NAME --resource-group $RG --query "properties.tenantId" --output tsv | tr -d '\r')
 ```
 
-Create the `SecretProviderClass`:
+Create the `SecretProviderClass` with the certificate name stored in key vault:
 
 ```bash
 cat <<EOF | kubectl apply -n $NAMESPACE -f -
@@ -172,6 +170,13 @@ EOF
 
 ## Configure and deploy the NGINX ingress controller
 
+Add the official `ingress-nginx` chart repository using the following `helm` commands:
+
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+```
+
 Using helm, install the `ingress-nginx` chart, passing the [manifests/nginx-tls.values] files to configure the controller to use the `azure-tls` secret provider class.
 
 ```bash
@@ -192,11 +197,19 @@ kubectl get secret ingress-tls-csi -n $NAMESPACE -o yaml
 
 ## Deploy the application
 
-Deploy using this command:
+Deploy application using this command:
 
 ```bash
 kubectl apply -f manifests/aks-helloworld.yaml -n $NAMESPACE
 ```
+
+Run this command to confirm pod is deployed and in Running Status:
+
+```bash
+kubectl get all -n $NAMESPACE
+```
+
+Next deploy ingress configured to use `ingress-tls-csi` secret:
 
 ```bash
 cat <<EOF | kubectl apply -n $NAMESPACE -f -
@@ -234,7 +247,7 @@ spec:
 EOF
 ```
 
-Get the external IP for the `nginx-ingress` service:
+Get the external IP for the `nginx-ingress` service (re-run command until IP value is populated):
 
 ```bash
 EXTERNAL_IP=$(kubectl get service -n $NAMESPACE -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
@@ -250,9 +263,10 @@ You should see the server certificate in the output
 
 ## Cleanup
 
-Once done testing, remove the namespace:
+Once done testing, uninstall the helm chart and delete the namespace:
 
 ```bash
-helm uninstall ingress-nginx -n $NAMESPACE
+RELEASE_NAME=$(helm list -n $NAMESPACE -o json | jq -r '.[0].name')
+helm uninstall $RELEASE_NAME -n $NAMESPACE
 kubectl delete namespace $NAMESPACE
 ```
