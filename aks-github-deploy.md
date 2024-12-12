@@ -146,31 +146,31 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
         - main
 
     env:
-    APP_NAME: demo-api
-    NAMESPACE: ghdemo
-    LOGIN_SERVER: <acrServerName>
-    CLUSTER_NAME: <clusterName>
-    CLUSTER_RESOURCE_GROUP: <clusterResourceGroup>     
+      APP_NAME: demo-api
+      NAMESPACE: ghdemo
+      LOGIN_SERVER: <acrServerName>
+      CLUSTER_NAME: <clusterName>
+      CLUSTER_RESOURCE_GROUP: <clusterResourceGroup>     
 
     jobs:
       build:
         runs-on: ubuntu-latest
         steps:   
         - name: Check Out Repo 
-        uses: actions/checkout@v2
+          uses: actions/checkout@v2
 
         # Connect to Azure Container Registry (ACR)
         - name: ACR login
-        uses: azure/docker-login@v1
-        with:
+          uses: azure/docker-login@v1
+          with:
             login-server: ${{ env.LOGIN_SERVER }}
             username: ${{ secrets.ACR_CLIENT_ID }}
             password: ${{ secrets.ACR_CLIENT_PASSWORD }}
 
         # Container build and push to a Azure Container Registry (ACR)
         - name: Build, tag, and push image to ACR
-        uses: docker/build-push-action@v2
-        with:
+          uses: docker/build-push-action@v2
+          with:
             context: ./src/demoapi
             file: Dockerfile
             push: true
