@@ -6,19 +6,17 @@
 
 [Exercise: Configure GitHub](#configure-github)
 
-[Exercise: Create a GitHub Repository](#create-a-fork-of-this-github-repository-and-create-github-codespace)
-
 [Exercise: Create the Secrets for the GitHub repo](#create-the-secrets-for-the-github-repo)
 
-[Exercise: Create a Basic CI/CD Pipeline with GitHub Actions](#exercise-create-a-basic-cicd-pipeline-with-github-actions)  
+[Exercise: Create a Basic CI/CD Pipeline with GitHub Actions](#create-a-basic-cicd-pipeline-with-github-actions)  
 
 [Exercise: Add a Kubernetes Deploy Step to the Workflow YAML](#add-a-kubernetes-deploy-step-to-the-workflow-yaml)
 
 ## Configure GitHub
 
-Use this configuration to prepare GitHub for either one of the following exercises.
+Use this configuration to prepare GitHub for the following exercises.
 
-Use the same ACR, Azure Key Vault and AKS cluster you created for **Lab 4**.
+Use the same ACR and AKS cluster you created for [AKS Basic Cluster](aks-basic-cluster.md) lab.
 
 ### Create a GitHub account
 
@@ -35,7 +33,7 @@ Use the same ACR, Azure Key Vault and AKS cluster you created for **Lab 4**.
 
 ## Create the Secrets for the GitHub repo
 
-## Task 1 - Create a service principal and grant it access to the AKS resource group
+### Task 1 - Create a service principal and grant it access to the AKS resource group
 
 We will create the secrets with Service Principal values, so first we must create a Service Principal.
 
@@ -81,7 +79,7 @@ We will create the secrets with Service Principal values, so first we must creat
 
 1. Copy the output temporarily as it will be used in the next steps.
 
-## Task 2 - Create the GitHub Action Secret to deploy to AKS cluster
+### Task 2 - Create the GitHub Action Secret to deploy to AKS cluster
 
 You've created the service principal. Next, create secrets in the GitHub Repository.
 
@@ -101,7 +99,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
 
     ![AZURE_CREDENTIALS Secret](content/ghgithubsecret1.png)
 
-## Task 3 - Create the GitHub Actions Secrets for the Azure Container Registry Authentication
+### Task 3 - Create the GitHub Actions Secrets for the Azure Container Registry Authentication
 
 1. Select New repository secret.
 
@@ -123,11 +121,11 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
 
     ![ACR Client Secret](content/ghacrclientpasswordsecret.png)
 
-## Exercise: Create a Basic CI/CD Pipeline with GitHub Actions
+## Create a Basic CI/CD Pipeline with GitHub Actions
 
 **NOTE:** This section task can be completed from local environment or from Github Codespaces
 
-## Task 1 - Create the GitHub Action
+### Task 1 - Create the GitHub Action
 
 1. To create a GitHub Action, you need to have a **workflow.yaml** in the **.github\workflows** directory. Create the **\.github\workflows** folder:
 
@@ -224,7 +222,7 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
 
 ## Add a Kubernetes Deploy Step to the Workflow YAML
 
-## Task 1 - Deploy the new workflow.yaml
+### Task 1 - Deploy the new workflow.yaml
 
 1. To create a the new GitHub Action, you need to append the content below at the bottom of the **.github/workflows/workflow.yaml** directory with the content below.
 
@@ -303,3 +301,24 @@ You've created the service principal. Next, create secrets in the GitHub Reposit
     ```
 
 CONGRATULATIONS!!! You just built a full CI/CD pipeline from code to Kubernetes.
+
+## Cleanup
+
+Delete service principal created:
+
+```bash
+SP_ID=$(az ad sp list --display-name $SP_NAME --query "[0].appId" --output tsv)
+az ad sp delete --id $SP_ID
+```
+
+Delete kubernetes namespace:
+
+```bash
+kubectl delete namespace ghdemo
+```
+
+We will keep the resource group for subsequent labs, unless it is no longer needed, use this command to delete it:
+
+```bash
+az group delete --name $RG
+```
