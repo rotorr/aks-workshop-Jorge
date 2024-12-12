@@ -82,9 +82,32 @@ kubectl get node
 
 To validate connectivity you can navigate to the created aks cluster resource in Azure Portal and clicking on [**Run command**](https://learn.microsoft.com/en-us/azure/aks/access-private-cluster?source=recommendations&tabs=azure-cli#run-commands-on-your-aks-cluster) under **Kubernetes Resources**
 
-## Create Jumpbox VM
+## Connect to Private Cluster
 
-Next create Jumpbox VM to connect to the Private AKS cluster. You will create a VM in the same vnet and install kubectl to have access to the API.
+### Option 1: Using aks command invoke
+
+Using `az aks command invoke` you can remotely invoke `kubectl` commands. To proceed with this option simply create this alias:
+
+```bash
+alias remote="az aks command invoke -g $RG -n $PRIVATE_AKS -c "
+```
+
+Connect to private cluster:
+
+```bash
+az aks get-credentials -n $PRIVATE_AKS -g $RG
+```
+
+Deploy sample application:
+
+```bash
+remote "kubectl create namespace helloworld"
+remote "kubectl apply -f aks-helloworld-basic.yaml -n helloworld" --file manifests/aks-helloworld-basic.yaml
+```
+
+### Option 2: Create Jumpbox VM
+
+In this option you will create a Jumpbox VM to connect to the Private AKS cluster. You will create a VM in the same vnet and install kubectl to have access to the API.
 
 Export environment variables:
 
@@ -167,7 +190,7 @@ Create remote alias to SSH into jumpbox using:
 alias remote="az ssh vm -n $VM_NAME -g $RG"
 ```
 
-Run the following commands to install kubectl and az login and confirm access:
+Run the following commands to install kubectl in Jumpbox VM and log into AKS:
 
 ```bash
 remote "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash"
@@ -176,8 +199,6 @@ remote "az login --identity -u $VM_IDENTITY_ID"
 remote "az aks get-credentials -n $PRIVATE_AKS -g $RG"
 remote "kubectl get node"
 ```
-
-## Deploy sample application
 
 Clone the repo to have manifest files available:
 
@@ -192,6 +213,8 @@ remote "kubectl create namespace helloworld"
 remote "cp manifests/aks-helloworld-basic.yaml"
 remote "kubectl apply -f aks-workshop/manifests/aks-helloworld-basic.yaml -n helloworld"
 ```
+
+## Validate sample application
 
 Run the following command to verify deployment and service has been created. Re-run command until pod shows a STATUS of Running.
 
