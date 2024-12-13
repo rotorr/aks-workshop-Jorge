@@ -58,7 +58,7 @@ az acr create -n $ACR_NAME -g $RG --sku Standard
                   --kubernetes-version $KUBERNETES_VERSION
     ```
 
-    **NOTE:** The creation process will take able 5-10 minutes.
+    **NOTE:** The creation process will take 5-10 minutes.
 
 1. Once complete, connect the cluster to your local client machine.
 

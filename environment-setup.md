@@ -1,6 +1,6 @@
 # Environment Setup
 
-## Prior to Lab Day
+## Prior to Workshop Day
 
 ### Option 1: Using Github Codespaces (recommended)
 
@@ -37,7 +37,7 @@ The following are pre-requisites before starting the labs:
         certbot/certbot certonly
         ```
 
-## During Lab Day
+## During Workshop Day
 
 Login to [Azure Portal](https://portal.azure.com/) with your credentials
 

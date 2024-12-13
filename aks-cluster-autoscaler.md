@@ -46,7 +46,8 @@ az aks nodepool update --resource-group $RG --cluster-name $CLUSTER_NAME \
 You can confirm the config was applied with the following command
 
 ```bash
-az aks nodepool show -g $RG --cluster-name $CLUSTER_NAME -n $NODEPOOL_NAME -o yaml | grep 'enableAutoScaling\|minCount\|maxCount'
+az aks nodepool show -g $RG --cluster-name $CLUSTER_NAME -n $NODEPOOL_NAME -o yaml \
+| grep 'enableAutoScaling\|minCount\|maxCount'
 
 enableAutoScaling: true
 maxCount: 3
@@ -55,7 +56,7 @@ minCount: 1
 
 ## Update Cluster Autoscale Profile
 
-Update the cluster with the new autoscale profile settings
+Update the cluster with the new autoscaler profile settings. This command updates the autoscaler profile to scan for scaling opportunities every 30 seconds, wait for 1 minute before scaling down unneeded nodes, and delay scale-down actions for 1 minute after adding new nodes.
 
 ```bash
 az aks update -g $RG -n $CLUSTER_NAME \
@@ -167,7 +168,8 @@ apt update && apt install -y apache2-utils
 Run a load against the external IP of your "helloworld" service (keep the trailing `/` in the url below):
 
 ```bash
-ab -t 240 -c 50 -n 200000 http://<EXTERNAL_IP>/
+EXTERNAL_IP=<EXTERNAL+IP>
+ab -t 240 -c 50 -n 200000 http://$EXTERNAL_IP/
 ```
 
 You should get output like the following:
