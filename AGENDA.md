@@ -22,5 +22,5 @@ The following is a suggested agenda for a workshop delivery over 2 half days (4 
 
 ## Extra (time permitting)
 
-1. [Create AKS Private Cluster limiting network traffic with Azure Firewall](aks-private-cluster-firewall.md) (60 minutes)
+1. [Create AKS Private Cluster limiting network traffic with Azure Firewall](aks-private-cluster-firewall.md) (90 minutes)
 1. [Configure TLS for NGINX Ingress Controller](aks-tls-nginx-ingress.md) (60 minutes)

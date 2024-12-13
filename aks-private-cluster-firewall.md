@@ -2,13 +2,9 @@
 
 > Estimated Duration: 90 minutes
 
-Deploying a private AKS cluster with no public IP addresses is a complex task and will take more time to do. This is as an "Advanced Lab" and it requires multiple Azure resources to be deployed and configured BEFORE deploying AKS. These include:
+Deploying a private AKS cluster with no public IP addresses is a complex task and will take more time to do. This is as an "Advanced Lab" and it requires multiple Azure resources to be deployed and configured BEFORE deploying AKS. 
 
-- An Azure Firewall with proper egress network rules set on it
-- A User Defined Route (UDR)
-- A VM jumpbox with Azure CLI & kubectl CLI installed to access the private AKS cluster
-
-The scripts below demonstrate how to complete all steps to deploy a private AKS cluster. The script blocks use the Azure CLI to deploy and configure the Azure resources.
+The scripts below demonstrate how to complete all steps to deploy a private AKS cluster and configure Azure Firewall with proper egress network rules set on it. The script blocks use the Azure CLI to deploy and configure the Azure resources.
 
 > You need to fulfill these [requirements](environment-setup.md) to complete this challenge
 
@@ -84,7 +80,7 @@ Create firewall with DNS Proxy enabled. To leverage FQDN on network rules, we ne
 az network firewall create -n azfw -g $RG -l $LOCATION --enable-dns-proxy true
 ```
 
-Create IP firewall configuration (first command will take a few minutes):
+Create IP firewall configuration (this command will take a few minutes):
 
 ```bash
 az network firewall ip-config create -f azfw -n azfw-ipconfig -g $RG --public-ip-address azfw-pip --vnet-name $VNET_NAME
@@ -107,7 +103,7 @@ Create an empty route table to be associated with a given subnet. The route tabl
 az network route-table create -n aks -g $RG -l $LOCATION
 ```
 
-Create routes in the route table for the subnets:
+Create 2 routes in the route table. This command creates a default route in the specified route table, directing all traffic to the Azure Firewall's private IP address, which acts as a virtual appliance. This ensures that all outbound traffic from the AKS cluster is routed through the Azure Firewall:
 
 ```bash
 az network route-table route create -g $RG --name defaultRoute --route-table-name aks \
@@ -123,7 +119,7 @@ This section covers three network rules and an application rule you can use to c
 - The first network rule allows access to port 9000 via TCP.
 - The second network rule allows access to port 1194 and 123 via UDP. Both these rules will only allow traffic destined to the Azure Region CIDR in this lab.
 - The third network rule opens port 123 to ntp.ubuntu.com FQDN via UDP. Adding an FQDN as a network rule is one of the specific features of Azure Firewall, so you'll need to adapt it when using your own options.
-- The fourth and fifth network rules allow access to pull containers from GitHub Container Registry (ghcr.io) and Docker Hub (docker.io).
+- The fourth, fifth and sixth network rules allow access to pull containers from GitHub Container Registry (ghcr.io), raw Github content (raw.githubusercontent.com) and Docker Hub (docker.io).
 
 ```bash
 az network firewall network-rule create --resource-group $RG --firewall-name azfw --collection-name 'aksfwnr' \
@@ -138,7 +134,8 @@ az network firewall network-rule create --resource-group $RG --firewall-name azf
 --name 'time' --protocols 'UDP' --source-addresses '*' --destination-fqdns 'ntp.ubuntu.com' --destination-ports 123
 
 az network firewall network-rule create --resource-group $RG --firewall-name azfw --collection-name 'aksfwnr' \
---name 'ghcr' --protocols 'TCP' --source-addresses '*' --destination-fqdns ghcr.io pkg-containers.githubusercontent.com \  --destination-ports '443'
+--name 'ghcr' --protocols 'TCP' --source-addresses '*' --destination-fqdns ghcr.io pkg-containers.githubusercontent.com \
+--destination-ports '443'
 
 az network firewall network-rule create --resource-group $RG --firewall-name azfw --collection-name 'aksfwnr' \
 --name 'github' --protocols 'TCP' --source-addresses '*' --destination-fqdns raw.githubusercontent.com  --destination-ports '443'
@@ -148,7 +145,7 @@ az network firewall network-rule create --resource-group $RG --firewall-name azf
 --destination-ports '443'
 ```
 
-Create the application rule:
+Create application rule to allow HTTP and HTTPS traffic to AKS:
 
 ```bash
 az network firewall application-rule create --resource-group $RG --firewall-name azfw --collection-name 'aksfwar' \
@@ -266,7 +263,7 @@ Attempt to curl public website and confirm it is not reachable:
 remote "kubectl exec -it $POD -n helloworld -- sh -c 'curl http://www.microsoft.com'"
 ```
 
-On a subsequent lab we will show how to expose this service via Application Gateway.
+To expose this service outside the cluster you will need to use [Application Gateway Ingress Controller](https://learn.microsoft.com/en-us/azure/application-gateway/ingress-controller-expose-service-over-http-https)
 
 ## Cleanup
 
