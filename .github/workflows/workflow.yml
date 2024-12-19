@@ -8,7 +8,7 @@ on:
 env:
   APP_NAME: demo-api
   NAMESPACE: ghdemo
-  LOGIN_SERVER: acrabc284
+  LOGIN_SERVER: acrabc284.azurecr.io
   CLUSTER_NAME: aks-abc
   CLUSTER_RESOURCE_GROUP: aks-abc-rg     
 
